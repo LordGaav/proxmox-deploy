@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see http://www.gnu.org/licenses/.
 
+from .exceptions import SSHCommandInvocationException
 from contextlib import contextmanager
 from paramiko import SSHClient, WarningPolicy
-from paramiko.ssh_exception import PasswordRequiredException, SSHException
+from paramiko.ssh_exception import PasswordRequiredException
 import getpass
 import types
 
@@ -59,9 +60,11 @@ def connect_ssh(hostname, username, prompt_for_password=True):
         stderr = chan.makefile_stderr('r').read()
         status = chan.recv_exit_status()
         if status != 0:
-            raise SSHException(
+            raise SSHCommandInvocationException(
                 "Failed to execute command `{0}`: {1}"
-                    .format(command, stderr[:stderr.rfind("\n")])
+                    .format(command, stderr[:stderr.rfind("\n")]),
+                stdout=stdout,
+                stderr=stderr
             )
         return (status, stdout, stderr)
 
