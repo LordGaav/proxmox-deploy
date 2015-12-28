@@ -19,43 +19,43 @@ from setuptools import setup
 from proxmoxdeploy.version import NAME, VERSION, DESCRIPTION
 
 setup(
-	name=NAME,
-	version=VERSION,
-	description=DESCRIPTION,
-	author="Nick Douma",
-	author_email="n.douma@nekoconeko.nl",
-	url="https://github.com/LordGaav/proxmox-deploy",
-	license="GPLv3",
-	packages=[
-		'proxmoxdeploy'
-	],
-	classifiers=[
-		'Development Status :: 3 - Alpha',
-		'Environment :: Console',
-		'Intended Audience :: Developers',
-		'Intended Audience :: Information Technology',
-		'Intended Audience :: System Administrators',
-		'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-		'Operating System :: POSIX :: Linux',
-		'Operating System :: POSIX :: BSD',
-		'Operating System :: POSIX',
-		'Programming Language :: Python :: 2',
-		'Programming Language :: Python :: 2.7',
-		'Programming Language :: Python :: 3',
-		'Programming Language :: Python :: 3.0',
-		'Programming Language :: Python :: 3.1',
-		'Programming Language :: Python :: 3.2',
-		'Programming Language :: Python :: 3.3',
-		'Programming Language :: Python :: 3.4',
-		'Programming Language :: Python :: Implementation :: CPython',
-		'Programming Language :: Python',
-		'Topic :: System :: Systems Administration',
-		'Topic :: Utilities'
-	],
-	install_requires=[
-		'paramiko',
-		'proxmoxer',
-		'requests',
-		'urwid'
-	]
+    name=NAME,
+    version=VERSION,
+    description=DESCRIPTION,
+    author="Nick Douma",
+    author_email="n.douma@nekoconeko.nl",
+    url="https://github.com/LordGaav/proxmox-deploy",
+    license="GPLv3",
+    packages=[
+        'proxmoxdeploy'
+    ],
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Information Technology',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+        'Operating System :: POSIX :: Linux',
+        'Operating System :: POSIX :: BSD',
+        'Operating System :: POSIX',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.0',
+        'Programming Language :: Python :: 3.1',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python',
+        'Topic :: System :: Systems Administration',
+        'Topic :: Utilities'
+    ],
+    install_requires=[
+        'paramiko',
+        'proxmoxer',
+        'requests',
+        'urwid'
+    ]
 )
