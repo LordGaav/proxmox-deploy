@@ -21,9 +21,9 @@ from subprocess import Popen, PIPE
 import os
 import shlex
 
-GENISOFS_COMMAND = find_executable("genisofs")
-if GENISOFS_COMMAND is None:
-    raise RuntimeError("genisofs command is missing, make sure it is installed.")
+GENISOIMAGE_COMMAND = find_executable("genisoimage")
+if GENISOIMAGE_COMMAND is None:
+    raise RuntimeError("genisoimage command is missing, make sure it is installed.")
 
 CLI_ECHO_COMMANDS = False
 CLI_ECHO_COMMAND_MESSAGE = "  Running command: `{0}`"
@@ -92,5 +92,5 @@ def generate_seed_iso(output_file, file_dir):
     """
     call_cli(
         "{0} -output '{1}' -volid cidata -joliet -rock '{2}'"
-        .format(GENISOFS_COMMAND, output_file, file_dir)
+        .format(GENISOIMAGE_COMMAND, output_file, temp_dir)
     )
