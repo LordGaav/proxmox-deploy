@@ -1,0 +1,76 @@
+#cloud-config
+hostname: {{ instance.name }}
+locale: {{ instance.locale }}
+timezone: {{ instance.timezone }}
+
+resize_rootfs: {{ instance.resize_rootfs }}
+
+write_files:
+  - path: /etc/default/keyboard
+    content: |
+      XKBMODEL="pc105"
+      XKBLAYOUT="{{ instance.kb_layout }}"
+      XKBVARIANT="intl"
+      XKBOPTIONS=""
+    permissions: '0644'
+    owner: root:root
+
+{% if instance.ifs -%}
+write_files:
+  {% for if in instance.ifs -%}
+  - path: /etc/network/interfaces.d/{{ if.name }}.cfg
+    content: |
+      auto {{ if.name }}
+      iface {{ if.name }} inet {{ if.type }}
+      {% if if.type == 'static' -%}
+      address {{ if.address }}
+      network {{ if.network }}
+      netmask {{ if.netmask }}
+      broadcast {{ if.broadcast }}
+      gateway {{ if.gateway }}
+      dns-nameservers {% for dns in if.dnss %}{{ dns }}{% if not loop.last %} {% endif %}{% endfor %}{% endif %}
+    permissions: '0644'
+    owner: root:root
+    {% endfor -%}
+{% endif %}
+{% if instance.users -%}
+users:
+  {% for user in instance.users -%}
+  - name: {{ user.name }}
+    {% if user.groups -%}
+    groups: {% for group in user.groups %}{{ group }}{% if not loop.last %},{% endif %}{% endfor %}
+    {% endif -%}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: {{ user.shell }}
+    lock-passwd: False
+    {% if user.ssh_keys -%}
+    ssh-authorized-keys:
+      {% for ssh_key in user.ssh_keys -%}
+        - {{ ssh_key }}
+      {% endfor -%}
+    {% endif -%}
+  {% endfor -%}
+{% endif %}
+ssh_pwauth: {{ instance.ssh_pass_auth }}
+package_update: {{ instance.apt_update }}
+package_upgrade: {{ instance.apt_upgrade }}
+
+byobu_by_default: system
+
+{% if instance.packages -%}
+packages:
+  {%for package in instance.packages -%}
+  - {{ package }}
+  {% endfor -%}
+{% endif -%}
+
+{% if instance.runcmds -%}
+runcmd:
+  {%for runcmd in instance.runcmds -%}
+  - {{ runcmd }}
+  {% endfor -%}
+{% endif -%}
+
+power_state:
+  mode: reboot
+  message: Instance ready, rebooting...
