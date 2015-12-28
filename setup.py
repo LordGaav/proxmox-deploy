@@ -56,6 +56,7 @@ setup(
         'paramiko',
         'proxmoxer',
         'requests',
-        'urwid'
+        'urwid',
+        'Jinja2'
     ]
 )
