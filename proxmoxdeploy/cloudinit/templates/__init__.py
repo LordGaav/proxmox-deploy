@@ -15,21 +15,18 @@
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see http://www.gnu.org/licenses/.
 
-from jinja2 import Template
-from pkg_resources import resource_string
+from jinja2 import Environment, PackageLoader, Template
 
 
 def _generate_data(output_file, context, template_file, default_template):
     if not template_file:
-        _template_file = resource_string(
-            "proxmoxdeploy.cloudinit.templates", default_template
-        )
+        env = Environment(loader=PackageLoader("proxmoxdeploy.cloudinit"))
+        template = env.get_template(default_template)
     else:
-        _template_file = template_file.read()
+        template = Template(template_file.read())
 
-    template = Template(context=_template_file)
     with open(output_file, "w") as output:
-        output.write(template.render(context))
+        output.write(template.render(context=context))
 
 
 def generate_user_data(output_file, context, template_file=None):
