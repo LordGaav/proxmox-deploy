@@ -1,23 +1,23 @@
 #cloud-config
-hostname: {{ instance.name }}
-locale: {{ instance.locale }}
-timezone: {{ instance.timezone }}
+hostname: {{ context.name }}
+locale: {{ context.locale }}
+timezone: {{ context.timezone }}
 
-resize_rootfs: {{ instance.resize_rootfs }}
+resize_rootfs: {{ context.resize_rootfs }}
 
 write_files:
   - path: /etc/default/keyboard
     content: |
       XKBMODEL="pc105"
-      XKBLAYOUT="{{ instance.kb_layout }}"
+      XKBLAYOUT="{{ context.kb_layout }}"
       XKBVARIANT="intl"
       XKBOPTIONS=""
     permissions: '0644'
     owner: root:root
 
-{% if instance.ifs -%}
+{% if context.ifs -%}
 write_files:
-  {% for if in instance.ifs -%}
+  {% for if in context.ifs -%}
   - path: /etc/network/interfaces.d/{{ if.name }}.cfg
     content: |
       auto {{ if.name }}
@@ -32,10 +32,11 @@ write_files:
     permissions: '0644'
     owner: root:root
     {% endfor -%}
-{% endif %}
-{% if instance.users -%}
+{% endif -%}
+
+{% if context.users -%}
 users:
-  {% for user in instance.users -%}
+  {% for user in context.users -%}
   - name: {{ user.name }}
     {% if user.groups -%}
     groups: {% for group in user.groups %}{{ group }}{% if not loop.last %},{% endif %}{% endfor %}
@@ -50,23 +51,24 @@ users:
       {% endfor -%}
     {% endif -%}
   {% endfor -%}
-{% endif %}
-ssh_pwauth: {{ instance.ssh_pass_auth }}
-package_update: {{ instance.apt_update }}
-package_upgrade: {{ instance.apt_upgrade }}
+{% endif -%}
+
+ssh_pwauth: {{ context.ssh_pass_auth }}
+package_update: {{ context.apt_update }}
+package_upgrade: {{ context.apt_upgrade }}
 
 byobu_by_default: system
 
-{% if instance.packages -%}
+{% if context.packages -%}
 packages:
-  {%for package in instance.packages -%}
+  {% for package in context.packages -%}
   - {{ package }}
   {% endfor -%}
 {% endif -%}
 
-{% if instance.runcmds -%}
+{% if context.runcmds -%}
 runcmd:
-  {%for runcmd in instance.runcmds -%}
+  {% for runcmd in context.runcmds -%}
   - {{ runcmd }}
   {% endfor -%}
 {% endif -%}
