@@ -15,11 +15,14 @@
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see http://www.gnu.org/licenses/.
 
-from .exceptions import CommandInvocationException
+from ..exceptions import CommandInvocationException
+from .templates import generate_user_data, generate_meta_data
 from distutils.spawn import find_executable
+from shutil import rmtree
 from subprocess import Popen, PIPE
 import os
 import shlex
+import tempfile
 
 GENISOIMAGE_COMMAND = find_executable("genisoimage")
 if GENISOIMAGE_COMMAND is None:
@@ -77,20 +80,27 @@ def call_cli(command, error_message=None, expected_return_code=0):
     return (stdout, stderr)
 
 
-def generate_seed_iso(output_file, file_dir):
+def generate_seed_iso(output_file, context):
     """
     Calls genisofs to create an cloud-init compatible ISO file. This ISO file
-    can be used to seed a cloud-init installation.
+    can be used to seed a cloud-init installation using the "No Cloud" approach
+    (https://cloudinit.readthedocs.org/en/latest/topics/datasources.html#no-cloud).
 
     Parameters
     ----------
     output_file: str
         Filename where the ISO file will be created.
-    file_dir: str
-        Basedir for the ISO filesystem to create. Should contain a 'user-data'
-        and 'meta-data' file in the appropriate format.
+    context: dict
+        Dict-like object to use as context for generating the user-data and
+        meta-data files.
     """
+    temp_dir = tempfile.mkdtemp(prefix="cloudinit-seed-iso")
+    generate_user_data(os.path.join(temp_dir, "user-data"), context)
+    generate_meta_data(os.path.join(temp_dir, "meta-data"), context)
+
     call_cli(
         "{0} -output '{1}' -volid cidata -joliet -rock '{2}'"
         .format(GENISOIMAGE_COMMAND, output_file, temp_dir)
     )
+
+    rmtree(temp_dir)
