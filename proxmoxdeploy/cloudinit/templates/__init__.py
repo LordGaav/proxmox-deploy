@@ -18,8 +18,9 @@
 from proxmoxdeploy.questions import QuestionGroup, OptionalQuestionGroup, \
                         SpecificAnswerOptionalQuestionGroup, Question, \
                         IntegerQuestion, BooleanQuestion, EnumQuestion, \
-                        NoAskQuestion
+                        NoAskQuestion, MultipleAnswerQuestion
 from jinja2 import Environment, PackageLoader, Template
+from paramiko import Agent, SSHException
 import locale
 import pytz
 
@@ -36,6 +37,19 @@ VALID_KEYBOARD_LAYOUTS = [
 ]
 VALID_TIMEZONES = sorted(pytz.common_timezones)
 
+try:
+    _agent = Agent()
+    DEFAULT_SSH_KEYS = [
+        "ssh {0}".format(key.get_base64()) for key in _agent.get_keys()
+    ]
+    _agent.close()
+    del _agent
+
+    if not DEFAULT_SSH_KEYS:
+        DEFAULT_SSH_KEYS = None
+except SSHException:
+    DEFAULT_SSH_KEYS = None
+
 QUESTIONS = QuestionGroup([
     ("_basic", QuestionGroup([
         ("vmid", IntegerQuestion("Virtual Machine id", min_value=100)),
@@ -48,7 +62,7 @@ QUESTIONS = QuestionGroup([
     ])),
     ("_security", QuestionGroup([
         ("ssh_pass_auth", NoAskQuestion("Allow SSH login using password", default=False)),
-        ("ssh_root_key", Question("SSH Public key for root")),
+        ("ssh_root_key", MultipleAnswerQuestion("SSH Public key for root user", default=DEFAULT_SSH_KEYS)),
         ("apt_update", BooleanQuestion("Run apt-get update after rollout", default=True)),
         ("apt_upgrade", BooleanQuestion("Run apt-get upgrade after rollout", default=False))
     ])),
