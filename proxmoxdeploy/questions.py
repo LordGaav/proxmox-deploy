@@ -198,3 +198,30 @@ class IntegerQuestion(Question):
         Casts the answer to an integer.
         """
         return int(answer)
+
+
+class EnumQuestion(Question):
+    """
+    Question class which only accepts answer from a given list.
+    """
+    def __init__(self, question, valid_answers, default=None,
+                 _output=sys.stdout, _input=sys.stdin):
+        super(EnumQuestion, self).__init__(
+            question, default, _output, _input
+        )
+        assert len(valid_answers) > 0
+        assert default in valid_answers
+        self.valid_answers = valid_answers
+
+    def validate(self, answer):
+        """
+        Validates the given answer by checking it's presence in the
+        provided list.
+        """
+        if answer not in self.valid_answers:
+            self.output.write(
+                "Please enter one of: {0}\n"
+                .format(", ".join(self.valid_answers))
+            )
+            return False
+        return True
