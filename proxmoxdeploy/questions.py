@@ -26,7 +26,7 @@ class Question(object):
     question_with_default = "{0} [{1}]: "
 
     def __init__(self, question, default=None,
-                 _output=sys.stdout, _input=sys.stdin):
+                 _output=sys.stderr, _input=sys.stdin):
         """
         Asks an interactive question and stores the answer. See ask() for the
         workflow.
@@ -39,7 +39,7 @@ class Question(object):
             Default value. Will be formatted as string and outputted as part of
             the question.
         _output: file
-            File to output questions to. sys.stdout by default.
+            File to output questions to. sys.stderr by default.
         _input: file
             File to read input from. sys.stdin by default.
         """
