@@ -271,7 +271,23 @@ class IntegerQuestion(Question):
         try:
             _answer = int(answer)
         except ValueError:
-            self.output.write("Please enter a valid integer.\n")
+            if not self.min_value and not self.max_value:
+                self.output.write("Please enter a valid integer.\n")
+            elif self.min_value and not self.max_value:
+                self.output.write(
+                    "Please enter a valid integer bigger than {0}.\n"
+                    .format(str(self.min_value))
+                )
+            elif not self.min_value and self.max_value:
+                self.output.write(
+                    "Please enter a valid integer smaller than {0}.\n"
+                    .format(str(self.max_value))
+                )
+            else:
+                self.output.write(
+                    "Please enter a valid integer between {0} and {1}.\n"
+                    .format(str(self.min_value), str(self.max_value))
+                )
             return False
 
         if self.min_value and _answer < self.min_value:
