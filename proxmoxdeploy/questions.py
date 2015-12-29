@@ -22,8 +22,8 @@ class Question(object):
     """
     Base Question class, which accepts all answers and stores them as string.
     """
-    question_without_default = "{0}?: "
-    question_with_default = "{0} [{1}]?: "
+    question_without_default = "{0}: "
+    question_with_default = "{0} [{1}]: "
 
     def __init__(self, question, default=None,
                  _output=sys.stdout, _input=sys.stdin):
@@ -103,12 +103,15 @@ class Question(object):
 
     def validate(self, answer):
         """
-        Validates the given answer. In the base class, the answer always valid.
+        Validates the given answer. In the base class, the answer is valid when
+        it is not empty.
+
         This method is responsible for outputting helpful messages if the answer
         is invalid.
+
         Should return False when invalid.
         """
-        return True
+        return answer != ""
 
 
 class BooleanQuestion(Question):
@@ -130,7 +133,7 @@ class BooleanQuestion(Question):
             answer = False
             return True
         else:
-            self.output.write("Please answer 'Yes' or 'No'\n")
+            self.output.write("Please answer 'Yes' or 'No'.\n")
             return False
 
     def format_default(self):
@@ -150,3 +153,49 @@ class BooleanQuestion(Question):
             return True
         else:
             return False
+
+
+class IntegerQuestion(Question):
+    """
+    Question class which only accepts integer answers.
+    """
+    def __init__(self, question, default=None, min_value=None, max_value=None,
+                 _output=sys.stdout, _input=sys.stdin):
+        super(IntegerQuestion, self).__init__(
+            question, default, _output, _input
+        )
+        self.min_value = min_value
+        self.max_value = max_value
+
+    def validate(self, answer):
+        """
+        Validates the given answer by casting it to an integer. If a min_value
+        and/or max_value was supplied to the constructor, also validates the
+        answer against that.
+        """
+        try:
+            _answer = int(answer)
+        except ValueError:
+            self.output.write("Please enter a valid integer.\n")
+            return False
+
+        if self.min_value and _answer < self.min_value:
+            self.output.write(
+                "Please enter a value bigger than {0}.\n"
+                .format(str(self.min_value))
+            )
+            return False
+
+        if self.max_value and _answer > self.max_value:
+            self.output.write(
+                "Please enter a value smaller than {0}.\n"
+                .format(str(self.max_value))
+            )
+            return False
+        return True
+
+    def format_answer(self, answer):
+        """
+        Casts the answer to an integer.
+        """
+        return int(answer)
