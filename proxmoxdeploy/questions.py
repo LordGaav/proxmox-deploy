@@ -15,7 +15,57 @@
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see http://www.gnu.org/licenses/.
 
+from collections import OrderedDict
+from contextlib import contextmanager
 import sys
+
+
+class QuestionGroup(OrderedDict):
+    """
+    A group of Questions, usually about the same subject.
+    """
+    def __init__(self, questions, *args, **kwargs):
+        """
+        Parameters
+        ----------
+        questions: list of tuples
+            List of (key, question) tuples. Question order is preserved.
+        """
+        super(QuestionGroup, self).__init__(*args, **kwargs)
+        for key, question in questions:
+            self[key] = question
+
+    def ask_all(self, _output=None, _input=None):
+        """
+        Call the ask() method on all Questions. If nested QuestionGroups are
+        encountered, ask_all() on those as well.
+
+        Parameters
+        ----------
+        _output: file
+            Allows for temporarily overriding the output file on each Question.
+        _input: file
+            Allows for temporarily overriding the input file on each Question.
+        """
+        for question in self.values():
+            if isinstance(question, QuestionGroup):
+                question.ask_all()
+            else:
+                question.ask(_output=_output, _input=_input)
+
+    def flatten_answers(self):
+        """
+        Flattens all Question answers into a dictionary. Nested QuestionGroups
+        are also flattened.
+        """
+        answers = {}
+        for key, question in self.iteritems():
+            if isinstance(question, QuestionGroup):
+                _answers = question.flatten_answers()
+                answers.update(_answers)
+            else:
+                answers[key] = question.answer
+        return answers
 
 
 class Question(object):
