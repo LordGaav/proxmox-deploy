@@ -71,6 +71,39 @@ class QuestionGroup(OrderedDict):
         return self.flatten_answers()[key]
 
 
+class OptionalQuestionGroup(QuestionGroup):
+    def __init__(self, questions, optional_question, *args, **kwargs):
+        super(OptionalQuestionGroup, self).__init__(questions, *args, **kwargs)
+        self.optional_question = optional_question
+
+    def evaluate_answer(self):
+        return bool(self.optional_question.answer)
+
+    def ask_all(self, _output=None, _input=None):
+        self.optional_question.ask(_output=_output, _input=_input)
+        if self.evaluate_answer():
+            super(OptionalQuestionGroup, self)\
+                .ask_all(_output=_output, _input=_input)
+
+    def flatten_answers(self):
+        if self.evaluate_answer():
+            return super(OptionalQuestionGroup, self).flatten_answers()
+        else:
+            return {}
+
+
+class SpecificAnswerOptionalQuestionGroup(OptionalQuestionGroup):
+    def __init__(self, questions, optional_question, specific_answer,
+                 *args, **kwargs):
+        super(SpecificAnswerOptionalQuestionGroup, self).__init__(
+            questions, optional_question, *args, **kwargs
+        )
+        self.specific_answer = specific_answer
+
+    def evaluate_answer(self):
+        return self.specific_answer == self.optional_question.answer
+
+
 class Question(object):
     """
     Base Question class, which accepts all answers and stores them as string.
