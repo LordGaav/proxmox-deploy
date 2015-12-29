@@ -179,7 +179,7 @@ class Question(object):
             valid = False
             while not valid:
                 self._write_question()
-                answer = self. _read_answer()
+                answer = self._read_answer()
                 if answer == "" and self.answer is not None:
                     return
                 valid = self.validate(answer)
