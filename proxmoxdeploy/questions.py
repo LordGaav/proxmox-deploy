@@ -337,6 +337,50 @@ class EnumQuestion(Question):
         return True
 
 
+class MultipleAnswerQuestion(Question):
+    """
+    Question class which accepts multiple answers.
+    """
+    def ask(self, _output=None, _input=None):
+        """
+        Asks the question to the user, like Question. After asking the question
+        once, the user is prompted to enter more values until an empty value is
+        provided.
+        """
+        with self._override_files(_output, _input):
+            answers = []
+            defaults = self.answer
+            valid = False
+            while not valid:
+                self._write_question()
+                answer = self._read_answer()
+                if answer and defaults:
+                    defaults = None
+                if answer == "" and self.answer is not None:
+                    return
+                valid = self.validate(answer)
+            answers.append(answer)
+
+            while answer:
+                answer = None
+                self.output.write("Enter another value, or empty to continue: ")
+                answer = self._read_answer()
+                if not answer:
+                    self.answer = answers
+                    return
+                else:
+                    valid = self.validate(answer)
+                    if valid:
+                        answers.append(answer)
+
+    def format_default(self):
+        """
+        Formats the default value for output to user. Only the count of
+        elements in the answer is returned.
+        """
+        return "{0} entries".format(len(self.answer))
+
+
 class NoAskQuestion(Question):
     """
     Question class which only supplies an answer without asking a Question.
