@@ -63,7 +63,19 @@ class Question(object):
     def _read_answer(self):
         return self.input.readline().strip()
 
-    def ask(self):
+    @contextmanager
+    def _override_files(self, _output, _input):
+        old_output = self.output
+        old_input = self.input
+        if _output:
+            self.output = _output
+        if _input:
+            self.input = _input
+        yield
+        self.output = old_output
+        self.input = old_input
+
+    def ask(self, _output=None, _input=None):
         """
         Asks the question to the user. The internal workflow of method calls
         is:
@@ -77,14 +89,15 @@ class Question(object):
         format_default, format_answer and validate are implemented in the base
         class, but should probably be overridden in subclasses.
         """
-        valid = False
-        while not valid:
-            self._write_question()
-            answer = self. _read_answer()
-            if answer == "" and self.answer is not None:
-                return
-            valid = self.validate(answer)
-        self.answer = self.format_answer(answer)
+        with self._override_files(_output, _input):
+            valid = False
+            while not valid:
+                self._write_question()
+                answer = self. _read_answer()
+                if answer == "" and self.answer is not None:
+                    return
+                valid = self.validate(answer)
+            self.answer = self.format_answer(answer)
 
     def format_default(self):
         """
