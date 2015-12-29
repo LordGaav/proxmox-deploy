@@ -57,6 +57,7 @@ setup(
         'proxmoxer',
         'requests',
         'urwid',
-        'Jinja2'
+        'Jinja2',
+        'pytz'
     ]
 )
