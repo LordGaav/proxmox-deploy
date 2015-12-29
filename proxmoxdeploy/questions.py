@@ -303,7 +303,8 @@ class EnumQuestion(Question):
     def __init__(self, question, valid_answers, default=None, **kwargs):
         super(EnumQuestion, self).__init__(question, default, **kwargs)
         assert len(valid_answers) > 0
-        assert default in valid_answers
+        if default:
+            assert default in valid_answers
         self.valid_answers = valid_answers
 
     def validate(self, answer):
