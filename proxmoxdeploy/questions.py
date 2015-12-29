@@ -158,11 +158,8 @@ class IntegerQuestion(Question):
     """
     Question class which only accepts integer answers.
     """
-    def __init__(self, question, default=None, min_value=None, max_value=None,
-                 _output=sys.stdout, _input=sys.stdin):
-        super(IntegerQuestion, self).__init__(
-            question, default, _output, _input
-        )
+    def __init__(self, question, min_value=None, max_value=None, **kwargs):
+        super(IntegerQuestion, self).__init__(question, **kwargs)
         self.min_value = min_value
         self.max_value = max_value
 
@@ -204,11 +201,8 @@ class EnumQuestion(Question):
     """
     Question class which only accepts answer from a given list.
     """
-    def __init__(self, question, valid_answers, default=None,
-                 _output=sys.stdout, _input=sys.stdin):
-        super(EnumQuestion, self).__init__(
-            question, default, _output, _input
-        )
+    def __init__(self, question, valid_answers, default=None, **kwargs):
+        super(EnumQuestion, self).__init__(question, default, **kwargs)
         assert len(valid_answers) > 0
         assert default in valid_answers
         self.valid_answers = valid_answers
