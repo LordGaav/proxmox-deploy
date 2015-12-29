@@ -48,18 +48,17 @@ class Question(object):
         self.input = _input
         self.output = _output
 
-    def _write_question(self):
+    def _format_question(self):
         if self.answer is not None:
-            self.output.write(
-                self.question_with_default.format(
-                    self.question,
-                    self.format_default()
-                )
+            return self.question_with_default.format(
+                self.question,
+                self.format_default()
             )
         else:
-            self.output.write(
-                self.question_without_default.format(self.question)
-            )
+            return self.question_without_default.format(self.question)
+
+    def _write_question(self):
+        self.output.write(self._format_question())
 
     def _read_answer(self):
         return self.input.readline().strip()
