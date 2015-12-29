@@ -89,6 +89,12 @@ QUESTIONS = QuestionGroup([
 ])
 
 
+def ask_cloudinit_questions():
+    global QUESTIONS
+    QUESTIONS.ask_all()
+    return QUESTIONS.flatten_answers()
+
+
 def _generate_data(output_file, context, template_file, default_template):
     if not template_file:
         env = Environment(loader=PackageLoader("proxmoxdeploy.cloudinit"))
