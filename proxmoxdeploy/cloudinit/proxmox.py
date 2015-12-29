@@ -15,7 +15,48 @@
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see http://www.gnu.org/licenses/.
 
+from .questions import QuestionGroup, IntegerQuestion, EnumQuestion, NoAskQuestion
 import math
+
+
+def ask_proxmox_questions(proxmox):
+    """
+    Asks the user questions about the Proxmox VM to provision.
+
+    Parameters
+    ----------
+    proxmox: ProxmoxClient
+
+    Returns
+    -------
+    dict of key-value pairs of answered questions.
+    """
+    node_q = EnumQuestion("Proxmox Node to create VM on",
+                          valid_answers=proxmox.get_nodes())
+    node_q.ask()
+    chosen_node = node_q.answer
+
+    storage_q = EnumQuestion("Storage to create disk on",
+                             valid_answers=proxmox.get_storage(chosen_node))
+    storage_q.ask()
+    chosen_storage = storage_q.answer
+
+    proxmox_questions = QuestionGroup([
+        ("node", NoAskQuestion(question=None, default=chosen_node)),
+        ("storage", NoAskQuestion(question=None, default=chosen_storage)),
+        ("cpu", IntegerQuestion(
+            "Amount of CPUs", min_value=1,
+            max_value=proxmox.get_max_cpu(chosen_node))),
+        ("memory", IntegerQuestion(
+            "Amount of Memory (MB)", min_value=32,
+            max_value=proxmox.get_max_memory(chosen_node))),
+        ("disk", IntegerQuestion(
+            "Size of disk (GB)", min_value=1,
+            max_value=proxmox.get_max_disk_size(chosen_node, chosen_storage)))
+    ])
+
+    proxmox_questions.ask_all()
+    return proxmox_questions.flatten_answers()
 
 
 class ProxmoxClient(object):
