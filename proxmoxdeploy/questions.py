@@ -282,3 +282,23 @@ class EnumQuestion(Question):
             )
             return False
         return True
+
+
+class NoAskQuestion(Question):
+    """
+    Question class which only supplies an answer without asking a Question.
+    """
+    def __init__(self, question, default, **kwargs):
+        super(NoAskQuestion, self).__init__(question, default, **kwargs)
+
+    def ask(self, _output=None, _input=None):
+        """
+        No questions asked.
+        """
+        pass
+
+    def format_answer(self, answer):
+        """
+        Return the answer without any casting or converting.
+        """
+        return answer
