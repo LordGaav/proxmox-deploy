@@ -67,6 +67,9 @@ class QuestionGroup(OrderedDict):
                 answers[key] = question.answer
         return answers
 
+    def lookup_answer(self, key):
+        return self.flatten_answers()[key]
+
 
 class Question(object):
     """
