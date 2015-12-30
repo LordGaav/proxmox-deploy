@@ -18,6 +18,8 @@
 from .exceptions import SSHCommandInvocationException
 from .questions import QuestionGroup, IntegerQuestion, EnumQuestion, \
     NoAskQuestion
+from openssh_wrapper import SSHError
+import logging
 import math
 import os.path
 
@@ -475,4 +477,11 @@ class ProxmoxClient(object):
                                disk_label="base-disk", disk_format="qcow2",
                                disk_size=disk_size)
         _node.qemu(vmid).config.set(virtio0=diskname, bootdisk="virtio0")
-        _node.qemu(vmid).resize.set(disk="virtio0", size=disk_size * 1024)
+        try:
+            _node.qemu(vmid).resize.set(disk="virtio0", size=disk_size * 1024)
+        except SSHError as se:
+            if "disk size" not in str(se):
+                raise se
+            logging.getLogger(__name__).error("Failed to set disk size, "
+                                              "disk will probably be "
+                                              "bigger than expected")
