@@ -20,6 +20,13 @@ from .questions import QuestionGroup, IntegerQuestion, EnumQuestion, NoAskQuesti
 import math
 import os.path
 
+CPU_FAMILIES = [
+    "486", "athlon", "pentium", "pentium2", "pentium3", "coreduo", "core2duo",
+    "kvm32", "kvm64", "qemu32", "qemu64", "phenom", "Conroe", "Penryn",
+    "Nehalem", "Westmere", "SandyBridge", "IvyBridge", "Haswell", "Broadwell",
+    "Opteron_G1", "Opteron_G2", "Opteron_G3", "Opteron_G4", "Opteron_G5", "host"
+]
+
 
 def ask_proxmox_questions(proxmox):
     """
@@ -49,12 +56,15 @@ def ask_proxmox_questions(proxmox):
         ("cpu", IntegerQuestion(
             "Amount of CPUs", min_value=1,
             max_value=proxmox.get_max_cpu(chosen_node))),
+        ("cpu_family", EnumQuestion(
+            "Emulate which CPU family",
+            default="host", valid_answers=CPU_FAMILIES)),
         ("memory", IntegerQuestion(
             "Amount of Memory (MB)", min_value=32,
             max_value=proxmox.get_max_memory(chosen_node))),
         ("disk", IntegerQuestion(
             "Size of disk (GB)", min_value=4,
-            max_value=proxmox.get_max_disk_size(chosen_node, chosen_storage)))
+            max_value=proxmox.get_max_disk_size(chosen_node, chosen_storage))),
     ])
 
     proxmox_questions.ask_all()
@@ -176,7 +186,7 @@ class ProxmoxClient(object):
             return min([int(math.floor(_node['maxdisk'] / 1024 ** 3))
                         for _node in self.client.nodes.get()])
 
-    def create_vm(self, node, vmid, name, cpu, memory):
+    def create_vm(self, node, vmid, name, cpu, cpu_family, memory):
         """
         Creates a VM.
 
@@ -190,13 +200,15 @@ class ProxmoxClient(object):
             Name of the VM.
         cpu: int
             Number of CPU cores.
+        cpu_family: str
+            What CPU family to emulate.
         memory: int
             Megabytes of memory.
         """
         node = self.client.nodes(node)
         node.qemu.create(
-            vmid=vmid, name=name, sockets=1, cores=cpu, memory=memory,
-            net0="virtio,bridge=vmbr0"
+            vmid=vmid, name=name, sockets=1, cores=cpu, cpu=cpu_family,
+            memory=memory, net0="virtio,bridge=vmbr0"
         )
 
     def _upload_to_storage(self, ssh_session, storage, vmid, filename,
