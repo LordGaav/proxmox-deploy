@@ -18,7 +18,7 @@
 from proxmoxdeploy.questions import QuestionGroup, OptionalQuestionGroup, \
                         SpecificAnswerOptionalQuestionGroup, Question, \
                         BooleanQuestion, EnumQuestion, NoAskQuestion, \
-                        MultipleAnswerQuestion
+                        IntegerQuestion, MultipleAnswerQuestion
 from jinja2 import Environment, PackageLoader, Template
 from subprocess import Popen, PIPE
 import locale
@@ -63,6 +63,8 @@ QUESTIONS = QuestionGroup([
     ])),
     ("_network", OptionalQuestionGroup([
         ("configure_network", NoAskQuestion(question=None, default=True)),
+        ("vlan_id", IntegerQuestion("VLAN ID", default=1,
+                                    min_value=1, max_value=4096)),
         ("network_device", NoAskQuestion(question=None, default="eth0")),
         ("_static_network", SpecificAnswerOptionalQuestionGroup([
             ("ip_address", Question("IP Address")),
@@ -75,7 +77,9 @@ QUESTIONS = QuestionGroup([
             "Network type", default="dhcp", valid_answers=["static", "dhcp"]),
             specific_answer="static"
         ))
-    ], optional_question=BooleanQuestion("Configure networking", default=True))),
+    ], optional_question=BooleanQuestion("Configure networking", default=True),
+        negative_questions={"vlan_id": NoAskQuestion(question=None, default=1)}
+    )),
     ("_misc", QuestionGroup([
         ("resize_rootfs", BooleanQuestion("Resize root filesystem", default=True)),
         ("packages", Question("Install extra packages (space separated))", default="")),

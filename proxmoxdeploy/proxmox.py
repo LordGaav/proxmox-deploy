@@ -198,7 +198,8 @@ class ProxmoxClient(object):
             return min([int(math.floor(_node['maxdisk'] / 1024 ** 3))
                         for _node in self.client.nodes.get()])
 
-    def create_vm(self, node, vmid, name, cpu, cpu_family, memory):
+    def create_vm(self, node, vmid, name, cpu, cpu_family, memory,
+                  vlan_id=None):
         """
         Creates a VM.
 
@@ -216,11 +217,16 @@ class ProxmoxClient(object):
             What CPU family to emulate.
         memory: int
             Megabytes of memory.
+        vlan_id: int
+            VLAN ID of the network device.
         """
         node = self.client.nodes(node)
+        net0 = "virtio,bridge=vmbr0"
+        if vlan_id:
+            net0 += ",tag={0}".format(vlan_id)
         node.qemu.create(
             vmid=vmid, name=name, sockets=1, cores=cpu, cpu=cpu_family,
-            memory=memory, net0="virtio,bridge=vmbr0"
+            memory=memory, net0=net0
         )
 
     def _upload_to_storage(self, ssh_session, storage, vmid, filename,
