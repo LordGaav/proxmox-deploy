@@ -57,6 +57,7 @@ setup(
         'configobj',
         'pytz'
     ],
+    package_data={"": ["*.j2"]},
     entry_points={
         'console_scripts': [
             'proxmox-deploy = proxmoxdeploy.cli:main'
