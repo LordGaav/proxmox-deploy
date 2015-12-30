@@ -442,3 +442,4 @@ class ProxmoxClient(object):
                                disk_label="base-disk", disk_format="qcow2",
                                disk_size=disk_size)
         _node.qemu(vmid).config.set(virtio0=diskname, bootdisk="virtio0")
+        _node.qemu(vmid).resize.set(disk="virtio0", size=disk_size * 1024)
