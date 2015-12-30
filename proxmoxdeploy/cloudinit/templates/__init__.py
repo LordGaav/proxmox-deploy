@@ -20,7 +20,7 @@ from proxmoxdeploy.questions import QuestionGroup, OptionalQuestionGroup, \
                         BooleanQuestion, EnumQuestion, NoAskQuestion, \
                         MultipleAnswerQuestion
 from jinja2 import Environment, PackageLoader, Template
-from paramiko import Agent, SSHException
+from subprocess import Popen, PIPE
 import locale
 import os
 import pytz
@@ -39,16 +39,11 @@ VALID_KEYBOARD_LAYOUTS = [
 VALID_TIMEZONES = sorted(pytz.common_timezones)
 
 try:
-    _agent = Agent()
-    DEFAULT_SSH_KEYS = [
-        "ssh {0}".format(key.get_base64()) for key in _agent.get_keys()
-    ]
-    _agent.close()
-    del _agent
-
-    if not DEFAULT_SSH_KEYS:
-        DEFAULT_SSH_KEYS = None
-except SSHException:
+    agent = Popen(["ssh-add", "-L"], stdout=PIPE)
+    if agent.wait() == 0:
+        DEFAULT_SSH_KEYS = agent.stdout.read().rstrip().split("\n")
+    del agent
+except:
     DEFAULT_SSH_KEYS = None
 
 QUESTIONS = QuestionGroup([
