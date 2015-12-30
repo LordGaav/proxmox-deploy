@@ -80,7 +80,7 @@ def call_cli(command, error_message=None, expected_return_code=0):
     return (stdout, stderr)
 
 
-def generate_seed_iso(output_file, context):
+def generate_seed_iso(context, output_file=None):
     """
     Calls genisofs to create an cloud-init compatible ISO file. This ISO file
     can be used to seed a cloud-init installation using the "No Cloud" approach
@@ -94,6 +94,9 @@ def generate_seed_iso(output_file, context):
         Dict-like object to use as context for generating the user-data and
         meta-data files.
     """
+    if not output_file:
+        output_file = tempfile.mkstemp(prefix="cloudinit-seed-iso-",
+                                       suffix=".iso")[1]
     temp_dir = tempfile.mkdtemp(prefix="cloudinit-seed-iso")
     generate_user_data(os.path.join(temp_dir, "user-data"), context)
     generate_meta_data(os.path.join(temp_dir, "meta-data"), context)
@@ -104,3 +107,4 @@ def generate_seed_iso(output_file, context):
     )
 
     rmtree(temp_dir)
+    return output_file
