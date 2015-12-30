@@ -73,7 +73,8 @@ QUESTIONS = QuestionGroup([
         ("configure_network", NoAskQuestion(question=None, default=True)),
         ("vlan_id", IntegerQuestion("VLAN ID", default=1,
                                     min_value=1, max_value=4096)),
-        ("network_device", NoAskQuestion(question=None, default="eth0")),
+        ("network_device", Question(question="Network device to configure",
+                                    default="eth0")),
         ("_static_network", SpecificAnswerOptionalQuestionGroup([
             ("ip_address", Question("IP Address")),
             ("subnet_mask", Question("Subnet Mask", default="255.255.255.0")),
