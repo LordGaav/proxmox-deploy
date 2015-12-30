@@ -53,7 +53,7 @@ def ask_proxmox_questions(proxmox):
             "Amount of Memory (MB)", min_value=32,
             max_value=proxmox.get_max_memory(chosen_node))),
         ("disk", IntegerQuestion(
-            "Size of disk (GB)", min_value=1,
+            "Size of disk (GB)", min_value=4,
             max_value=proxmox.get_max_disk_size(chosen_node, chosen_storage)))
     ])
 
