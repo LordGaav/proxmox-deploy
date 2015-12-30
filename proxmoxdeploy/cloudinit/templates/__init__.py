@@ -17,11 +17,12 @@
 
 from proxmoxdeploy.questions import QuestionGroup, OptionalQuestionGroup, \
                         SpecificAnswerOptionalQuestionGroup, Question, \
-                        IntegerQuestion, BooleanQuestion, EnumQuestion, \
-                        NoAskQuestion, MultipleAnswerQuestion
+                        BooleanQuestion, EnumQuestion, NoAskQuestion, \
+                        MultipleAnswerQuestion
 from jinja2 import Environment, PackageLoader, Template
 from paramiko import Agent, SSHException
 import locale
+import os
 import pytz
 
 VALID_LOCALES = sorted(set(locale.locale_alias.values()))
@@ -88,8 +89,14 @@ QUESTIONS = QuestionGroup([
 ])
 
 
-def ask_cloudinit_questions():
+def ask_cloudinit_questions(cloud_images_dir):
     global QUESTIONS
+    images = list_images(cloud_images_dir)
+    if len(images) < 1:
+        raise RuntimeError("Cloud images directory contains no valid images.")
+    QUESTIONS['_basic']['image'] = EnumQuestion("What Cloud image to upload",
+                                                valid_answers=images,
+                                                default=images[0])
     QUESTIONS.ask_all()
     return QUESTIONS.flatten_answers()
 
@@ -103,6 +110,22 @@ def _generate_data(output_file, context, template_file, default_template):
 
     with open(output_file, "w") as output:
         output.write(template.render(context=context))
+
+
+def list_images(_dir):
+    """
+    Walks the given directory recursively and list all usable images.
+    """
+    images = []
+    valid_extensions = [".iso", ".img", ".qcow2", ".raw"]
+    for root, subdirs, files in os.walk(_dir):
+        if subdirs:
+            for subdir in subdirs:
+                images = images + list_images(subdir)
+        for _file in files:
+            if os.path.splitext(_file)[1] in valid_extensions:
+                images.append(os.path.join(root, _file))
+    return images
 
 
 def generate_user_data(output_file, context, template_file=None):
