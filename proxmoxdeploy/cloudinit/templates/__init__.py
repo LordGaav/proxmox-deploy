@@ -133,8 +133,8 @@ def list_images(_dir):
             for subdir in subdirs:
                 images = images + list_images(subdir)
         for _file in files:
-            if os.path.splitext(_file)[1] in VALID_IMAGE_FORMATS \
-                + VALID_COMPRESSION_FORMATS:
+            if os.path.splitext(_file)[1] in \
+                    VALID_IMAGE_FORMATS + VALID_COMPRESSION_FORMATS:
                 images.append(os.path.join(root, _file))
     return images
 
