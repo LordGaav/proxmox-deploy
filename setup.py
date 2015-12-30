@@ -58,6 +58,7 @@ setup(
         'requests',
         'urwid',
         'Jinja2',
-        'pytz'
+        'pytz',
+        'configobj'
     ]
 )
