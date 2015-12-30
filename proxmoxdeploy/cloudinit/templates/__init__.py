@@ -16,9 +16,8 @@
 # this program. If not, see http://www.gnu.org/licenses/.
 
 from proxmoxdeploy.questions import QuestionGroup, OptionalQuestionGroup, \
-                        SpecificAnswerOptionalQuestionGroup, Question, \
-                        BooleanQuestion, EnumQuestion, NoAskQuestion, \
-                        IntegerQuestion, MultipleAnswerQuestion
+    SpecificAnswerOptionalQuestionGroup, Question, BooleanQuestion, \
+    EnumQuestion, NoAskQuestion, IntegerQuestion, MultipleAnswerQuestion
 from jinja2 import Environment, PackageLoader, Template
 from subprocess import Popen, PIPE
 import locale
@@ -51,15 +50,22 @@ QUESTIONS = QuestionGroup([
         ("name", Question("Hostname (a FQDN is recommended)")),
     ])),
     ("_languages", QuestionGroup([
-        ("locale", EnumQuestion("Locale", default="en_US.UTF-8", valid_answers=VALID_LOCALES)),
-        ("timezone", EnumQuestion("Timezone", default="Europe/Amsterdam", valid_answers=VALID_TIMEZONES)),
-        ("kb_layout", EnumQuestion("Keyboard layout", default="us", valid_answers=VALID_KEYBOARD_LAYOUTS)),
+        ("locale", EnumQuestion("Locale", default="en_US.UTF-8",
+                                valid_answers=VALID_LOCALES)),
+        ("timezone", EnumQuestion("Timezone", default="Europe/Amsterdam",
+                                  valid_answers=VALID_TIMEZONES)),
+        ("kb_layout", EnumQuestion("Keyboard layout", default="us",
+                                   valid_answers=VALID_KEYBOARD_LAYOUTS)),
     ])),
     ("_security", QuestionGroup([
-        ("ssh_pass_auth", NoAskQuestion("Allow SSH login using password", default=False)),
-        ("ssh_root_keys", MultipleAnswerQuestion("SSH Public key for root user", default=DEFAULT_SSH_KEYS)),
-        ("apt_update", BooleanQuestion("Run apt-get update after rollout", default=True)),
-        ("apt_upgrade", BooleanQuestion("Run apt-get upgrade after rollout", default=False))
+        ("ssh_pass_auth", NoAskQuestion("Allow SSH login using password",
+                                        default=False)),
+        ("ssh_root_keys", MultipleAnswerQuestion(
+            "SSH Public key for root user", default=DEFAULT_SSH_KEYS)),
+        ("apt_update", BooleanQuestion("Run apt-get update after rollout",
+                                       default=True)),
+        ("apt_upgrade", BooleanQuestion("Run apt-get upgrade after rollout",
+                                        default=False))
     ])),
     ("_network", OptionalQuestionGroup([
         ("configure_network", NoAskQuestion(question=None, default=True)),
@@ -81,9 +87,12 @@ QUESTIONS = QuestionGroup([
         negative_questions={"vlan_id": NoAskQuestion(question=None, default=1)}
     )),
     ("_misc", QuestionGroup([
-        ("resize_rootfs", BooleanQuestion("Resize root filesystem", default=True)),
-        ("packages", Question("Install extra packages (space separated))", default="")),
-        ("commands", Question("Run commands after cloud init (space separated)", default=""))
+        ("resize_rootfs", BooleanQuestion("Resize root filesystem",
+                                          default=True)),
+        ("packages", Question("Install extra packages (space separated))",
+                              default="")),
+        ("commands", Question(
+            "Run commands after cloud init (space separated)", default=""))
     ]))
 ])
 
@@ -139,8 +148,8 @@ def generate_user_data(output_file, context, template_file=None):
         Dict(-like) object where the required template variables can be looked
         up.
     template_file: file
-        File to read the Jinja2 template to populate from. If not set, will load
-        the default template. The file will be read to the end.
+        File to read the Jinja2 template to populate from. If not set, will
+        load the default template. The file will be read to the end.
     """
     _generate_data(output_file, context, template_file, "user-data.j2")
 
@@ -157,7 +166,7 @@ def generate_meta_data(output_file, context, template_file=None):
         Dict(-like) object where the required template variables can be looked
         up.
     template_file: file
-        File to read the Jinja2 template to populate from. If not set, will load
-        the default template. The file will be read to the end.
+        File to read the Jinja2 template to populate from. If not set, will
+        load the default template. The file will be read to the end.
     """
     _generate_data(output_file, context, template_file, "meta-data.j2")

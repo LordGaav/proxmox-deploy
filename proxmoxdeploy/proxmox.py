@@ -16,7 +16,8 @@
 # this program. If not, see http://www.gnu.org/licenses/.
 
 from .exceptions import SSHCommandInvocationException
-from .questions import QuestionGroup, IntegerQuestion, EnumQuestion, NoAskQuestion
+from .questions import QuestionGroup, IntegerQuestion, EnumQuestion, \
+    NoAskQuestion
 import math
 import os.path
 
@@ -24,7 +25,8 @@ CPU_FAMILIES = [
     "486", "athlon", "pentium", "pentium2", "pentium3", "coreduo", "core2duo",
     "kvm32", "kvm64", "qemu32", "qemu64", "phenom", "Conroe", "Penryn",
     "Nehalem", "Westmere", "SandyBridge", "IvyBridge", "Haswell", "Broadwell",
-    "Opteron_G1", "Opteron_G2", "Opteron_G3", "Opteron_G4", "Opteron_G5", "host"
+    "Opteron_G1", "Opteron_G2", "Opteron_G3", "Opteron_G4", "Opteron_G5",
+    "host"
 ]
 
 
@@ -166,7 +168,8 @@ class ProxmoxClient(object):
         """
         storages = []
         for storage in self.client.nodes(node).storage.get():
-            if "images" in storage['content'].split(",") and storage['type'] in ("dir", "lvm"):
+            if ("images" in storage['content'].split(",")
+                    and storage['type'] in ("dir", "lvm")):
                 storages.append(storage['storage'])
         return storages
 

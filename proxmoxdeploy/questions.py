@@ -208,8 +208,8 @@ class Question(object):
         Validates the given answer. In the base class, the answer is valid when
         it is not empty.
 
-        This method is responsible for outputting helpful messages if the answer
-        is invalid.
+        This method is responsible for outputting helpful messages if the
+        answer is invalid.
 
         Should return False when invalid.
         """
@@ -367,7 +367,8 @@ class MultipleAnswerQuestion(Question):
 
             while answer:
                 answer = None
-                self.output.write("Enter another value, or empty to continue: ")
+                self.output.write(
+                    "Enter another value, or empty to continue: ")
                 answer = self._read_answer()
                 if not answer:
                     self.answer = answers

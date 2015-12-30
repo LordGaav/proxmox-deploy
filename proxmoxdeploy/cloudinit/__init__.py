@@ -26,7 +26,8 @@ import tempfile
 
 GENISOIMAGE_COMMAND = find_executable("genisoimage")
 if GENISOIMAGE_COMMAND is None:
-    raise RuntimeError("genisoimage command is missing, make sure it is installed.")
+    raise RuntimeError(
+        "genisoimage command is missing, make sure it is installed.")
 
 CLI_ECHO_COMMANDS = False
 CLI_ECHO_COMMAND_MESSAGE = "  Running command: `{0}`"
@@ -35,8 +36,9 @@ CLI_COMMAND_PREFIX = ""
 
 def call_cli(command, error_message=None, expected_return_code=0):
     """
-    Calls the given CLI command and handles output. If the return code does not
-    match the expected_return_code, a CommandInvocationException will be raised.
+    Calls the given CLI command and handles output. If the return code does
+    not match the expected_return_code, a CommandInvocationException
+    will be raised.
 
     Parameters
     ----------
@@ -84,7 +86,8 @@ def generate_seed_iso(context, output_file=None):
     """
     Calls genisofs to create an cloud-init compatible ISO file. This ISO file
     can be used to seed a cloud-init installation using the "No Cloud" approach
-    (https://cloudinit.readthedocs.org/en/latest/topics/datasources.html#no-cloud).
+    (https://cloudinit.readthedocs.org/en/latest
+    /topics/datasources.html#no-cloud).
 
     Parameters
     ----------

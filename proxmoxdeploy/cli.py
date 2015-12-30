@@ -34,7 +34,8 @@ def get_arguments():
     initial_parser = ArgumentParser()
     initial_parser.add_argument("--config", metavar="CFG", type=str,
                                 help="Config file to load")
-    initial_parser.add_argument("--version", action="store_true", default=False,
+    initial_parser.add_argument("--version", action="store_true",
+                                default=False,
                                 help="Display version information and exit")
 
     args, unknown_args = initial_parser.parse_known_args()
