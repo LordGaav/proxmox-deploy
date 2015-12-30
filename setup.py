@@ -53,12 +53,10 @@ setup(
         'Topic :: Utilities'
     ],
     install_requires=[
-        'openssh-wrapper',
         'proxmoxer',
-        'requests',
-        'urwid',
+        'openssh-wrapper',
         'Jinja2',
-        'pytz',
-        'configobj'
+        'configobj',
+        'pytz'
     ]
 )
