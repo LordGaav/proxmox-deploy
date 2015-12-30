@@ -14,10 +14,11 @@ write_files:
     owner: root:root
 
 ssh_pwauth: {{ context.ssh_pass_auth }}
-users:
-  - name: root
-    ssh-authorized-keys:
-      - {{ context.ssh_root_key }}
+ssh_authorized_keys:
+  {% for ssh_key in context.ssh_root_keys -%}
+  - {{ ssh_key }}
+  {% endfor %}
+
 package_update: {{ context.apt_update }}
 package_upgrade: {{ context.apt_upgrade }}
 

@@ -62,7 +62,7 @@ QUESTIONS = QuestionGroup([
     ])),
     ("_security", QuestionGroup([
         ("ssh_pass_auth", NoAskQuestion("Allow SSH login using password", default=False)),
-        ("ssh_root_key", MultipleAnswerQuestion("SSH Public key for root user", default=DEFAULT_SSH_KEYS)),
+        ("ssh_root_keys", MultipleAnswerQuestion("SSH Public key for root user", default=DEFAULT_SSH_KEYS)),
         ("apt_update", BooleanQuestion("Run apt-get update after rollout", default=True)),
         ("apt_upgrade", BooleanQuestion("Run apt-get upgrade after rollout", default=False))
     ])),
