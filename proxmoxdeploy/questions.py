@@ -72,9 +72,11 @@ class QuestionGroup(OrderedDict):
 
 
 class OptionalQuestionGroup(QuestionGroup):
-    def __init__(self, questions, optional_question, *args, **kwargs):
+    def __init__(self, questions, optional_question, negative_questions=None,
+                 *args, **kwargs):
         super(OptionalQuestionGroup, self).__init__(questions, *args, **kwargs)
         self.optional_question = optional_question
+        self.negative_questions = negative_questions
 
     def evaluate_answer(self):
         return bool(self.optional_question.answer)
@@ -88,6 +90,8 @@ class OptionalQuestionGroup(QuestionGroup):
     def flatten_answers(self):
         if self.evaluate_answer():
             return super(OptionalQuestionGroup, self).flatten_answers()
+        elif self.negative_questions:
+            return self.negative_questions
         else:
             return {}
 
