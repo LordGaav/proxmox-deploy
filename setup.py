@@ -53,7 +53,7 @@ setup(
         'Topic :: Utilities'
     ],
     install_requires=[
-        'paramiko',
+        'openssh-wrapper',
         'proxmoxer',
         'requests',
         'urwid',
