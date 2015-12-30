@@ -144,7 +144,7 @@ class ProxmoxClient(object):
         """
         storages = []
         for storage in self.client.nodes(node).storage.get():
-            if "images" in storage['content'].split(","):
+            if "images" in storage['content'].split(",") and storage['type'] in ("dir", "lvm"):
                 storages.append(storage['storage'])
         return storages
 
