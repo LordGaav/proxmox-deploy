@@ -36,6 +36,8 @@ VALID_KEYBOARD_LAYOUTS = [
     "tj", "tm", "tr", "tw", "tz", "ua", "us", "uz", "vn", "za"
 ]
 VALID_TIMEZONES = sorted(pytz.common_timezones)
+VALID_IMAGE_FORMATS = [".iso", ".img", ".qcow2", ".raw"]
+VALID_COMPRESSION_FORMATS = [".xz", ".gz", ".bz2"]
 
 try:
     agent = Popen(["ssh-add", "-L"], stdout=PIPE)
@@ -125,13 +127,13 @@ def list_images(_dir):
     Walks the given directory recursively and list all usable images.
     """
     images = []
-    valid_extensions = [".iso", ".img", ".qcow2", ".raw"]
     for root, subdirs, files in os.walk(_dir):
         if subdirs:
             for subdir in subdirs:
                 images = images + list_images(subdir)
         for _file in files:
-            if os.path.splitext(_file)[1] in valid_extensions:
+            if os.path.splitext(_file)[1] in VALID_IMAGE_FORMATS \
+                + VALID_COMPRESSION_FORMATS:
                 images.append(os.path.join(root, _file))
     return images
 

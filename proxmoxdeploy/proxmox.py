@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see http://www.gnu.org/licenses/.
 
+from .cloudinit.templates import VALID_IMAGE_FORMATS, VALID_COMPRESSION_FORMATS
 from .exceptions import SSHCommandInvocationException
 from .questions import QuestionGroup, IntegerQuestion, EnumQuestion, \
     NoAskQuestion
@@ -273,6 +274,26 @@ class ProxmoxClient(object):
         with open(filename) as _file:
             ssh_session.upload_file_obj(_file, tmpfile)
 
+        _, ext = os.path.splitext(tmpfile)
+        if ext in VALID_COMPRESSION_FORMATS:
+            if ext == ".xz":
+                command = "unxz"
+            elif ext == ".gz":
+                command = "gunzip"
+            else:
+                command = "bunzip2"
+            stdout, stderr = ssh_session._exec("{0} '{1}'".format(command,
+                                                                  tmpfile))
+            if len(stdout) > 0 or len(stderr) > 0:
+                raise SSHCommandInvocationException(
+                    "Failed to decompress image", stdout=stdout, stderr=stderr)
+            tmpfile, _ = os.path.splitext(tmpfile)
+
+        _, ext = os.path.splitext(tmpfile)
+        if ext not in VALID_IMAGE_FORMATS:
+            raise RuntimeError("Provided image is not of a valid type: {0}"
+                               .format(", ".join(VALID_IMAGE_FORMATS)))
+
         if not disk_size:
             disk_size = int(math.ceil(os.stat(filename).st_size / 1024))
 
@@ -283,8 +304,6 @@ class ProxmoxClient(object):
             )
         )
         if storagename not in stdout and len(stderr) > 0:
-            print stdout
-            print stderr
             raise SSHCommandInvocationException(
                 "Failed to allocate disk", stdout=stdout, stderr=stderr)
 
@@ -296,7 +315,7 @@ class ProxmoxClient(object):
             raise SSHCommandInvocationException(
                 "Failed to get path for disk", stdout=stdout, stderr=stderr)
 
-        devicepath = stdout
+        devicepath = stdout.strip()
 
         stdout, stderr = ssh_session._exec(
             "qemu-img convert -O {0} '{1}' {2}".format(disk_format, tmpfile,
@@ -304,8 +323,6 @@ class ProxmoxClient(object):
         )
 
         if len(stderr) > 0:
-            print stdout
-            print stderr
             raise SSHCommandInvocationException(
                 "Failed to copy file into disk", stdout=stdout, stderr=stderr)
 
