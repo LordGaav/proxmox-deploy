@@ -65,6 +65,8 @@ def ask_proxmox_questions(proxmox):
         ("disk", IntegerQuestion(
             "Size of disk (GB)", min_value=4,
             max_value=proxmox.get_max_disk_size(chosen_node, chosen_storage))),
+        ("vmid", IntegerQuestion("Virtual Machine id", min_value=1,
+                                 default=proxmox.get_next_vmid()))
     ])
 
     proxmox_questions.ask_all()
@@ -83,6 +85,16 @@ class ProxmoxClient(object):
             ProxmoxAPI intance
         """
         self.client = client
+
+    def get_next_vmid(self):
+        """
+        Retrieve the next available vmid.
+
+        Returns
+        -------
+        The next available vmid.
+        """
+        return self.client.cluster.nextid.get()
 
     def get_nodes(self):
         """

@@ -52,7 +52,6 @@ except SSHException:
 
 QUESTIONS = QuestionGroup([
     ("_basic", QuestionGroup([
-        ("vmid", IntegerQuestion("Virtual Machine id", min_value=100)),
         ("name", Question("Hostname (a FQDN is recommended)")),
     ])),
     ("_languages", QuestionGroup([
