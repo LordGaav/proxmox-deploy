@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see http://www.gnu.org/licenses/.
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from proxmoxdeploy.version import NAME, VERSION, DESCRIPTION
 
 setup(
@@ -26,9 +26,7 @@ setup(
     author_email="n.douma@nekoconeko.nl",
     url="https://github.com/LordGaav/proxmox-deploy",
     license="GPLv3",
-    packages=[
-        'proxmoxdeploy'
-    ],
+    packages=find_packages(),
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
@@ -58,5 +56,10 @@ setup(
         'Jinja2',
         'configobj',
         'pytz'
-    ]
+    ],
+    entry_points={
+        'console_scripts': [
+            'proxmox-deploy = proxmoxdeploy.cli:main'
+        ]
+    }
 )
