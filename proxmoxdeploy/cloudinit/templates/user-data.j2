@@ -22,22 +22,6 @@ ssh_authorized_keys:
 package_update: {{ context.apt_update }}
 package_upgrade: {{ context.apt_upgrade }}
 
-{% if context.configure_network %}
-network-interfaces: |
-  auto {{ context.network_device }}
-  {% if context.ip_address -%}
-  iface {{ context.network_device }} inet static
-  address {{ ip_address }}
-  network {{ network_address }}
-  netmask {{ subnet_mask }}
-  broadcast {{ broadcast_address }}
-  gateway {{ gateway_address }}
-  dns-nameservers {{ dns_servers }}
-  {% else -%}
-  iface {{ context.network_device }} inet dhcp
-  {% endif -%}
-{% endif %}
-
 resize_rootfs: {{ context.resize_rootfs }}
 {% if context.packages -%}
 packages:
