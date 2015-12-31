@@ -8,6 +8,9 @@
 /doc/*.1
 /*.tar.bz2
 /.coverage
+/build
+/dist
+/deb_dist
 
 ## Pip files
 /*.egg-info
