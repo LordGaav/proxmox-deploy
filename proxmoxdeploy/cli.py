@@ -18,6 +18,7 @@
 from .cloudinit.templates import ask_cloudinit_questions
 from .cloudinit import generate_seed_iso
 from .proxmox import ProxmoxClient, ask_proxmox_questions
+from .version import DESCRIPTION
 from argparse import ArgumentParser
 from configobj import ConfigObj
 from proxmoxer import ProxmoxAPI, ResourceException
@@ -31,7 +32,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def get_arguments():
-    initial_parser = ArgumentParser()
+    initial_parser = ArgumentParser(add_help=False)
     initial_parser.add_argument("--config", metavar="CFG", type=str,
                                 help="Config file to load")
     initial_parser.add_argument("--version", action="store_true",
@@ -44,7 +45,7 @@ def get_arguments():
     if args.config:
         config = ConfigObj(args.config)
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(description=DESCRIPTION)
     parser.add_argument("--config", metavar="CFG", type=str,
                         help="Config file to load.")
     parser.add_argument("--proxmox-host", metavar="HOST", type=str,
