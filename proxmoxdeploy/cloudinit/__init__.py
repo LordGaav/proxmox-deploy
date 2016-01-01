@@ -20,6 +20,7 @@ from .templates import generate_user_data, generate_meta_data
 from distutils.spawn import find_executable
 from shutil import rmtree
 from subprocess import Popen, PIPE
+import logging
 import os
 import shlex
 import tempfile
@@ -32,6 +33,8 @@ if GENISOIMAGE_COMMAND is None:
 CLI_ECHO_COMMANDS = False
 CLI_ECHO_COMMAND_MESSAGE = "  Running command: `{0}`"
 CLI_COMMAND_PREFIX = ""
+
+logger = logging.getLogger(__name__)
 
 
 def call_cli(command, error_message=None, expected_return_code=0):
@@ -100,14 +103,16 @@ def generate_seed_iso(context, output_file=None):
     if not output_file:
         output_file = tempfile.mkstemp(prefix="cloudinit-seed-iso-",
                                        suffix=".iso")[1]
+
     temp_dir = tempfile.mkdtemp(prefix="cloudinit-seed-iso")
+    logger.info("Generating cloud-init seed files at {0}".format(temp_dir))
     generate_user_data(os.path.join(temp_dir, "user-data"), context)
     generate_meta_data(os.path.join(temp_dir, "meta-data"), context)
 
-    call_cli(
-        "{0} -output '{1}' -volid cidata -joliet -rock '{2}'"
-        .format(GENISOIMAGE_COMMAND, output_file, temp_dir)
-    )
+    logger.info("Generating cloud-init seed ISO at {0}".format(output_file))
+    call_cli("{0} -output '{1}' -volid cidata -joliet -rock '{2}'"
+             .format(GENISOIMAGE_COMMAND, output_file, temp_dir))
 
+    logger.info("Removing cloud-init temp files")
     rmtree(temp_dir)
     return output_file

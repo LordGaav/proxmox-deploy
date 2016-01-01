@@ -32,6 +32,8 @@ CPU_FAMILIES = [
     "host"
 ]
 
+logger = logging.getLogger(__name__)
+
 
 def ask_proxmox_questions(proxmox):
     """
@@ -230,6 +232,8 @@ class ProxmoxClient(object):
         net0 = "virtio,bridge=vmbr0"
         if vlan_id:
             net0 += ",tag={0}".format(vlan_id)
+
+        logger.info("Creating Virtual Machine")
         node.qemu.create(
             vmid=vmid, name=name, sockets=1, cores=cpu, cpu=cpu_family,
             memory=memory, net0=net0
@@ -270,12 +274,14 @@ class ProxmoxClient(object):
             Override the disk size. If not specified, the size is calculated
             from the file. In kilobytes.
         """
+        logger.info("Transferring image to Proxmox")
         tmpfile = os.path.join("/tmp", os.path.basename(filename))
         with open(filename) as _file:
             ssh_session.upload_file_obj(_file, tmpfile)
 
         _, ext = os.path.splitext(tmpfile)
         if ext in VALID_COMPRESSION_FORMATS:
+            logger.info("Decompressing image")
             if ext == ".xz":
                 command = "unxz"
             elif ext == ".gz":
@@ -297,6 +303,7 @@ class ProxmoxClient(object):
         if not disk_size:
             disk_size = int(math.ceil(os.stat(filename).st_size / 1024))
 
+        logger.info("Allocating virtual disk")
         stdout, stderr = ssh_session._exec(
             "pvesm alloc '{0}' {1} '{2}' {3} -format {4}".format(
                 storage, vmid, diskname,
@@ -317,6 +324,7 @@ class ProxmoxClient(object):
 
         devicepath = stdout.strip()
 
+        logger.info("Copying image into virtual disk")
         stdout, stderr = ssh_session._exec(
             "qemu-img convert -O {0} '{1}' {2}".format(disk_format, tmpfile,
                                                        devicepath)
@@ -326,6 +334,7 @@ class ProxmoxClient(object):
             raise SSHCommandInvocationException(
                 "Failed to copy file into disk", stdout=stdout, stderr=stderr)
 
+        logger.info("Removing temporary disk file")
         ssh_session._exec("rm '{0}'".format(tmpfile))
 
     def _upload_to_flat_storage(self, storage, vmid, filename, disk_format,
@@ -360,6 +369,7 @@ class ProxmoxClient(object):
         diskname = "vm-{0}-{1}.{2}".format(vmid, disk_label, disk_format)
         storagename = "{0}:{1}/{2}".format(storage, vmid, diskname)
 
+        logger.info("Uploading to flat storage")
         self._upload_to_storage(ssh_session, storage, vmid, filename,
                                 diskname, storagename, disk_format=disk_format,
                                 disk_size=disk_size)
@@ -398,6 +408,7 @@ class ProxmoxClient(object):
         diskname = "vm-{0}-{1}".format(vmid, disk_label)
         storagename = "{0}:{1}".format(storage, diskname)
 
+        logger.info("Uploading to LVM storage")
         # LVM only supports raw disks, overwrite the disk_format here.
         self._upload_to_storage(ssh_session, storage, vmid, filename,
                                 diskname, storagename, disk_format="raw",
@@ -495,10 +506,10 @@ class ProxmoxClient(object):
                                disk_size=disk_size)
         _node.qemu(vmid).config.set(virtio0=diskname, bootdisk="virtio0")
         try:
+            logger.info("Resizing virtual disk")
             _node.qemu(vmid).resize.set(disk="virtio0", size=disk_size * 1024)
         except SSHError as se:
             if "disk size" not in str(se):
                 raise se
-            logging.getLogger(__name__).error("Failed to set disk size, "
-                                              "disk will probably be "
-                                              "bigger than expected")
+            logger.error("Failed to set disk size, disk will probably be "
+                         "bigger than expected")

@@ -18,7 +18,7 @@
 from .cloudinit.templates import ask_cloudinit_questions
 from .cloudinit import generate_seed_iso
 from .proxmox import ProxmoxClient, ask_proxmox_questions
-from .version import DESCRIPTION
+from .version import NAME, VERSION, BUILD, DESCRIPTION
 from argparse import ArgumentParser
 from configobj import ConfigObj
 from proxmoxer import ProxmoxAPI, ResourceException
@@ -26,9 +26,11 @@ import logging
 import os
 import sys
 
-logging.getLogger(None).addHandler(logging.StreamHandler())
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+root_logger = logging.getLogger(None)
+root_logger.addHandler(logging.StreamHandler())
+base_logger = logging.getLogger("proxmoxdeploy")
+base_logger.setLevel(logging.INFO)
+logger = logging.getLogger("proxmoxdeploy.cli")
 
 
 def get_arguments():
@@ -78,6 +80,9 @@ def interact_with_user(args, api):
 
 
 def main():
+    logger.info("{0} version {1} (build {2}) starting...".format(
+        NAME, VERSION, BUILD))
+
     args = get_arguments()
     api = ProxmoxClient(ProxmoxAPI(args.proxmox_host, port="22", timeout=60,
                                    user=args.proxmox_user, backend="openssh"))
@@ -90,7 +95,10 @@ def main():
         logger.info("Aborted by user")
         sys.exit(0)
 
-    logger.info("Creating VM on Proxmox")
+    logger.info("")
+    logger.info("")
+    logger.info("Starting provisioning process")
+
     try:
         api.create_vm(node=proxmox['node'], vmid=proxmox['vmid'],
                       name=cloudinit['name'], cpu=proxmox['cpu'],
@@ -101,7 +109,6 @@ def main():
         sys.exit(1)
 
     try:
-        logger.info("Generating cloud-init seed ISO")
         cloudinit_iso = generate_seed_iso(context=context)
         logger.debug("File generated at: {0}".format(cloudinit_iso))
 
@@ -118,6 +125,8 @@ def main():
         if os.path.exists(cloudinit_iso):
             logger.debug("Removing seed ISO file")
             os.remove(cloudinit_iso)
+
+    logger.info("Virtual Machine provisioning completed")
 
 if __name__ == "__main__":
     main()
