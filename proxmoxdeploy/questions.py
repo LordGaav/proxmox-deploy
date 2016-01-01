@@ -320,6 +320,9 @@ class EnumQuestion(Question):
     """
     Question class which only accepts answer from a given list.
     """
+    question_without_default = "{0} (Enter ? for a list of options): "
+    question_with_default = "{0} (Enter ? for a list of options) [{1}]: "
+
     def __init__(self, question, valid_answers, default=None, **kwargs):
         super(EnumQuestion, self).__init__(question, default, **kwargs)
         assert len(valid_answers) > 0
@@ -332,7 +335,7 @@ class EnumQuestion(Question):
         Validates the given answer by checking it's presence in the
         provided list.
         """
-        if answer not in self.valid_answers:
+        if answer == "?" or answer not in self.valid_answers:
             self.output.write(
                 "Please enter one of: {0}\n"
                 .format(", ".join(self.valid_answers))
