@@ -17,6 +17,7 @@
 
 from .cloudinit.templates import ask_cloudinit_questions
 from .cloudinit import generate_seed_iso
+from .exceptions import CommandInvocationException
 from .proxmox import ProxmoxClient, ask_proxmox_questions
 from .version import NAME, VERSION, BUILD, DESCRIPTION
 from argparse import ArgumentParser
@@ -121,6 +122,15 @@ def main():
                              vmid=proxmox['vmid'],
                              img_file=cloudinit['image'],
                              disk_size=disk_size)
+    except CommandInvocationException as cie:
+        logger.error("Provisioning failed")
+        if hasattr(cie, "stdout") or hasattr(cie, "stderr"):
+            logger.error("Command output was:")
+        if hasattr(cie, "stdout"):
+            logger.error(cie.stdout)
+        if hasattr(cie, "stderr"):
+            logger.error(cie.stderr)
+        sys.exit(1)
     finally:
         if os.path.exists(cloudinit_iso):
             logger.debug("Removing seed ISO file")
