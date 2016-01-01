@@ -83,8 +83,12 @@ def main():
                                    user=args.proxmox_user, backend="openssh"))
 
     logger.info("Asking user for configuration input")
-    (proxmox, cloudinit) = interact_with_user(args, api)
-    context = dict(proxmox, **cloudinit)
+    try:
+        (proxmox, cloudinit) = interact_with_user(args, api)
+        context = dict(proxmox, **cloudinit)
+    except KeyboardInterrupt:
+        logger.info("Aborted by user")
+        sys.exit(0)
 
     logger.info("Creating VM on Proxmox")
     try:
