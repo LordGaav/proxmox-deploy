@@ -28,7 +28,7 @@ import sys
 
 logging.getLogger(None).addHandler(logging.StreamHandler())
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 def get_arguments():
