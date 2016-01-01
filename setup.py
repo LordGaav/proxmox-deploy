@@ -18,10 +18,14 @@
 from setuptools import setup, find_packages
 from proxmoxdeploy.version import NAME, VERSION, DESCRIPTION
 
+with open('README.rst') as file:
+    long_description = file.read()
+
 setup(
     name=NAME,
     version=VERSION,
     description=DESCRIPTION,
+    long_description=long_description,
     author="Nick Douma",
     author_email="n.douma@nekoconeko.nl",
     url="https://github.com/LordGaav/proxmox-deploy",
