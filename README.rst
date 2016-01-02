@@ -123,6 +123,7 @@ Dependencies
 * `Jinja2`_ for generating the ``user-data`` and ``meta-data`` files.
 * `configobj`_ for reading configuration files.
 * `pytz`_ for timezone names.
+* ``genisoimage`` (Linux) or ``mkisofs`` (FreeBSD) command.
 
 Do note that we need to access the Proxmox server via SSH, to perform the
 various tasks. We also use the `pvesh` and `pvesm` commands over SSH to

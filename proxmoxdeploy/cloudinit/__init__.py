@@ -25,10 +25,23 @@ import os
 import shlex
 import tempfile
 
-GENISOIMAGE_COMMAND = find_executable("genisoimage")
-if GENISOIMAGE_COMMAND is None:
+BUILDISO_COMMAND = None
+if not BUILDISO_COMMAND:
+    GENISOIMAGE_COMMAND = find_executable("genisoimage")
+    if GENISOIMAGE_COMMAND:
+        BUILDISO_COMMAND = GENISOIMAGE_COMMAND + \
+            " -output '{0}' -volid cidata -joliet -rock '{1}'"
+
+if not BUILDISO_COMMAND:
+    MKISOFS_COMMAND = find_executable("mkisofs")
+    if MKISOFS_COMMAND:
+        BUILDISO_COMMAND = MKISOFS_COMMAND + \
+            " -o '{0}' -V cidata -rock '{1}'"
+
+if not BUILDISO_COMMAND:
     raise RuntimeError(
-        "genisoimage command is missing, make sure it is installed.")
+        "genisoimage (Linux) or mkisofs (FreeBSD) command is missing, "
+        "make sure it is installed.")
 
 CLI_ECHO_COMMANDS = False
 CLI_ECHO_COMMAND_MESSAGE = "  Running command: `{0}`"
@@ -110,8 +123,7 @@ def generate_seed_iso(context, output_file=None):
     generate_meta_data(os.path.join(temp_dir, "meta-data"), context)
 
     logger.info("Generating cloud-init seed ISO at {0}".format(output_file))
-    call_cli("{0} -output '{1}' -volid cidata -joliet -rock '{2}'"
-             .format(GENISOIMAGE_COMMAND, output_file, temp_dir))
+    call_cli(BUILDISO_COMMAND.format(output_file, temp_dir))
 
     logger.info("Removing cloud-init temp files")
     rmtree(temp_dir)
