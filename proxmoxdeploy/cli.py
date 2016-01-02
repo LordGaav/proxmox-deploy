@@ -85,7 +85,7 @@ def main():
         NAME, VERSION, BUILD))
 
     args = get_arguments()
-    api = ProxmoxClient(ProxmoxAPI(args.proxmox_host, port="22", timeout=60,
+    api = ProxmoxClient(ProxmoxAPI(args.proxmox_host, port="22", timeout=600,
                                    user=args.proxmox_user, backend="openssh"))
 
     logger.info("Asking user for configuration input")
