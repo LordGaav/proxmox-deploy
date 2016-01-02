@@ -239,6 +239,77 @@ class ProxmoxClient(object):
             memory=memory, net0=net0
         )
 
+    def _upload(self, ssh, filename):
+        logger.info("Transferring image to Proxmox")
+        tmpfile = os.path.join("/tmp", os.path.basename(filename))
+        with open(filename) as _file:
+            ssh.upload_file_obj(_file, tmpfile)
+        return tmpfile
+
+    def _decompress_image(self, ssh, tmpfile):
+        _, ext = os.path.splitext(tmpfile)
+        if ext in VALID_COMPRESSION_FORMATS:
+            logger.info("Decompressing image")
+            if ext == ".xz":
+                command = "unxz"
+            elif ext == ".gz":
+                command = "gunzip"
+            else:
+                command = "bunzip2"
+            stdout, stderr = ssh._exec("{0} '{1}'".format(command,
+                                                          tmpfile))
+            if len(stdout) > 0 or len(stderr) > 0:
+                raise SSHCommandInvocationException(
+                    "Failed to decompress image", stdout=stdout, stderr=stderr)
+            tmpfile, _ = os.path.splitext(tmpfile)
+
+        _, ext = os.path.splitext(tmpfile)
+        if ext not in VALID_IMAGE_FORMATS:
+            raise RuntimeError("Provided image is not of a valid type: {0}"
+                               .format(", ".join(VALID_IMAGE_FORMATS)))
+
+        stdout, stderr = ssh._exec("stat --format '%s' '{0}'".format(tmpfile))
+
+        if len(stdout) == 0 or len(stderr) > 0:
+            raise SSHCommandInvocationException(
+                "Failed to get image size", stdout=stdout, stderr=stderr)
+        return (int(math.ceil(int(stdout) / 1024)), tmpfile)
+
+    def _allocate_disk(self, ssh, storage, vmid, diskname, disk_size,
+                       storagename, disk_format):
+        logger.info("Allocating virtual disk")
+        stdout, stderr = ssh._exec(
+            "pvesm alloc '{0}' {1} '{2}' {3} -format {4}".format(
+                storage, vmid, diskname,
+                disk_size, disk_format
+            )
+        )
+        if storagename not in stdout and len(stderr) > 0:
+            raise SSHCommandInvocationException(
+                "Failed to allocate disk", stdout=stdout, stderr=stderr)
+
+    def _get_device_path(self, ssh, storagename):
+        stdout, stderr = ssh._exec(
+            "pvesm path '{0}'".format(storagename)
+        )
+
+        if len(stderr) > 0:
+            raise SSHCommandInvocationException(
+                "Failed to get path for disk", stdout=stdout, stderr=stderr)
+
+        return stdout.strip()
+
+    def _copy_image_into_disk(self, ssh, disk_format, tmpfile, devicepath):
+        logger.info("Copying image into virtual disk")
+        stdout, stderr = ssh._exec(
+            "qemu-img convert -O {0} '{1}' {2}".format(disk_format, tmpfile,
+                                                       devicepath)
+        )
+
+        if len(stderr) > 0:
+            raise SSHCommandInvocationException(
+                "Failed to copy file into disk", stdout=stdout, stderr=stderr)
+
     def _upload_to_storage(self, ssh_session, storage, vmid, filename,
                            diskname, storagename, disk_format="raw",
                            disk_size=None):
@@ -274,68 +345,27 @@ class ProxmoxClient(object):
             Override the disk size. If not specified, the size is calculated
             from the file. In kilobytes.
         """
-        logger.info("Transferring image to Proxmox")
-        tmpfile = os.path.join("/tmp", os.path.basename(filename))
-        with open(filename) as _file:
-            ssh_session.upload_file_obj(_file, tmpfile)
+        try:
+            tmpfile = self._upload(ssh_session, filename)
+            image_size, tmpfile = self._decompress_image(ssh_session, tmpfile)
 
-        _, ext = os.path.splitext(tmpfile)
-        if ext in VALID_COMPRESSION_FORMATS:
-            logger.info("Decompressing image")
-            if ext == ".xz":
-                command = "unxz"
-            elif ext == ".gz":
-                command = "gunzip"
-            else:
-                command = "bunzip2"
-            stdout, stderr = ssh_session._exec("{0} '{1}'".format(command,
-                                                                  tmpfile))
-            if len(stdout) > 0 or len(stderr) > 0:
-                raise SSHCommandInvocationException(
-                    "Failed to decompress image", stdout=stdout, stderr=stderr)
-            tmpfile, _ = os.path.splitext(tmpfile)
+            if not disk_size:
+                disk_size = int(math.ceil(os.stat(filename).st_size / 1024))
 
-        _, ext = os.path.splitext(tmpfile)
-        if ext not in VALID_IMAGE_FORMATS:
-            raise RuntimeError("Provided image is not of a valid type: {0}"
-                               .format(", ".join(VALID_IMAGE_FORMATS)))
+            if image_size > disk_size:
+                logger.warning("Provided disk size was too small, increasing...")
 
-        if not disk_size:
-            disk_size = int(math.ceil(os.stat(filename).st_size / 1024))
+            self._allocate_disk(ssh_session, storage, vmid, diskname, disk_size,
+                                storagename, disk_format)
 
-        logger.info("Allocating virtual disk")
-        stdout, stderr = ssh_session._exec(
-            "pvesm alloc '{0}' {1} '{2}' {3} -format {4}".format(
-                storage, vmid, diskname,
-                disk_size, disk_format
-            )
-        )
-        if storagename not in stdout and len(stderr) > 0:
-            raise SSHCommandInvocationException(
-                "Failed to allocate disk", stdout=stdout, stderr=stderr)
+            devicepath = self._get_device_path(ssh_session, storagename)
 
-        stdout, stderr = ssh_session._exec(
-            "pvesm path '{0}'".format(storagename)
-        )
-
-        if len(stderr) > 0:
-            raise SSHCommandInvocationException(
-                "Failed to get path for disk", stdout=stdout, stderr=stderr)
-
-        devicepath = stdout.strip()
-
-        logger.info("Copying image into virtual disk")
-        stdout, stderr = ssh_session._exec(
-            "qemu-img convert -O {0} '{1}' {2}".format(disk_format, tmpfile,
-                                                       devicepath)
-        )
-
-        if len(stderr) > 0:
-            raise SSHCommandInvocationException(
-                "Failed to copy file into disk", stdout=stdout, stderr=stderr)
-
-        logger.info("Removing temporary disk file")
-        ssh_session._exec("rm '{0}'".format(tmpfile))
+            self._copy_image_into_disk(ssh_session, disk_format, tmpfile,
+                                       devicepath)
+        finally:
+            if tmpfile:
+                logger.info("Removing temporary disk file")
+                #ssh_session._exec("rm '{0}'".format(tmpfile))
 
     def _upload_to_flat_storage(self, storage, vmid, filename, disk_format,
                                 disk_label, disk_size=None):
