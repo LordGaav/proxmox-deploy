@@ -39,13 +39,14 @@ VALID_TIMEZONES = sorted(pytz.common_timezones)
 VALID_IMAGE_FORMATS = [".iso", ".img", ".qcow2", ".raw"]
 VALID_COMPRESSION_FORMATS = [".xz", ".gz", ".bz2"]
 
+DEFAULT_SSH_KEYS = None
 try:
     agent = Popen(["ssh-add", "-L"], stdout=PIPE)
     if agent.wait() == 0:
         DEFAULT_SSH_KEYS = agent.stdout.read().rstrip().split("\n")
     del agent
 except:
-    DEFAULT_SSH_KEYS = None
+    pass
 
 QUESTIONS = QuestionGroup([
     ("_basic", QuestionGroup([
