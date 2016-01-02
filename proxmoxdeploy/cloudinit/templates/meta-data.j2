@@ -1,0 +1,18 @@
+instance-id: vmid-{{ context.vmid }}
+hostname: {{ context.name }}
+
+{% if context.configure_network %}
+network-interfaces: |
+  auto {{ context.network_device }}
+  {% if context.ip_address -%}
+  iface {{ context.network_device }} inet static
+    address {{ context.ip_address }}
+    network {{ context.network_address }}
+    netmask {{ context.subnet_mask }}
+    broadcast {{ context.broadcast_address }}
+    gateway {{ context.gateway_address }}
+    dns-nameservers {{ context.dns_servers }}
+  {% else -%}
+  iface {{ context.network_device }} inet dhcp
+  {% endif -%}
+{% endif %}

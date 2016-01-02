@@ -1,0 +1,34 @@
+## Compiled Python files
+*.pyc
+
+## Config files
+*.config
+
+## Generated files
+/doc/*.1
+/*.tar.bz2
+/.coverage
+/build
+/dist
+/deb_dist
+
+## Pip files
+/*.egg-info
+/*.egg
+
+## Test files
+/env
+/.coverage
+/cover
+/coverage.xml
+
+## Debian build files
+/build
+/debian/control
+/debian/proxmox-deploy/*
+/debian/proxmox-deploy-*
+/debian/proxmox-deploy.*
+/debian/files
+/debian/tmp
+/debian/*.log
+/debian/*.README.*

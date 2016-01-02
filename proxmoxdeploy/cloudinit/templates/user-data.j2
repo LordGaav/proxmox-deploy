@@ -1,0 +1,41 @@
+#cloud-config
+hostname: {{ context.name }}
+
+locale: {{ context.locale }}
+timezone: {{ context.timezone }}
+write_files:
+  - path: /etc/default/keyboard
+    content: |
+      XKBMODEL="pc105"
+      XKBLAYOUT="{{ context.kb_layout }}"
+      XKBVARIANT="intl"
+      XKBOPTIONS=""
+    permissions: '0644'
+    owner: root:root
+
+ssh_pwauth: {{ context.ssh_pass_auth }}
+ssh_authorized_keys:
+  {% for ssh_key in context.ssh_root_keys -%}
+  - {{ ssh_key }}
+  {% endfor %}
+
+package_update: {{ context.apt_update }}
+package_upgrade: {{ context.apt_upgrade }}
+
+resize_rootfs: {{ context.resize_rootfs }}
+{% if context.packages -%}
+packages:
+  {% for package in context.packages -%}
+  - {{ package }}
+  {% endfor -%}
+{% endif %}
+{% if context.runcmds -%}
+runcmd:
+  {% for runcmd in context.runcmds -%}
+  - {{ runcmd }}
+  {% endfor -%}
+{% endif %}
+
+power_state:
+  mode: reboot
+  message: Instance ready, rebooting...
