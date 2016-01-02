@@ -32,6 +32,48 @@ files based on user input.  ``proxmox-deploy`` also takes care of creating a
 Proxmox VM and uploading the *cloud image* and ``cloud-init`` image into the
 proper datastore. All that's left afterwards is turning on the VM.
 
+How to install
+--------------
+
+All dependencies are installable using pip. To install globally, execute as
+root:
+
+.. code-block:: bash
+
+    # pip install proxmox-deploy
+
+Or to install into a virtualenv (as a normal user):
+
+.. code-block:: bash
+
+    $ virtualenv env
+    $ . env/bin/activate
+    $ pip install proxmox-deploy
+
+Make sure to activate your virtualenv before using or upgrading the tool later:
+
+.. code-block:: bash
+
+    $ . env/bin/activate
+
+To later upgrade it:
+
+.. code-block:: bash
+
+    $ pip install --upgrade proxmox-deploy
+
+
+How to use
+----------
+
+After installing, simply use:
+
+.. code-block:: bash
+
+    $ proxmox-deploy --proxmox-host <hostname> --cloud-images-dir <images directory>
+
+And answer the interactive questions.
+
 Tested cloud images
 -------------------
 
