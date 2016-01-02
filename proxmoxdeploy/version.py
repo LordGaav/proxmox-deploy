@@ -17,6 +17,6 @@
 
 NAME = "proxmox-deploy"
 VERSION = "0.1"
-BUILD = "AAAAAA"
+BUILD = "1aa342a"
 _DESCRIPTION = "{0} is cli-based deployment tool for Proxmox"
 DESCRIPTION = _DESCRIPTION.format(NAME)
