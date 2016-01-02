@@ -268,12 +268,26 @@ class ProxmoxClient(object):
             raise RuntimeError("Provided image is not of a valid type: {0}"
                                .format(", ".join(VALID_IMAGE_FORMATS)))
 
-        stdout, stderr = ssh._exec("stat --format '%s' '{0}'".format(tmpfile))
+        return tmpfile
+
+    def _get_virtual_disk_size(self, ssh, tmpfile):
+        stdout, stderr = ssh._exec("qemu-img info '{0}'".format(tmpfile))
 
         if len(stdout) == 0 or len(stderr) > 0:
             raise SSHCommandInvocationException(
-                "Failed to get image size", stdout=stdout, stderr=stderr)
-        return (int(math.ceil(int(stdout) / 1024)), tmpfile)
+                "Failed to get virtual disk size", stdout=stdout,
+                stderr=stderr)
+
+        virtual_size = 0
+        try:
+            for line in stdout.split("\n"):
+                if "virtual size" in line:
+                    virtual_size = line.split("(")[1].split()[0]
+                    virtual_size = int(math.ceil(int(virtual_size) / 1024))
+                    break
+        except:
+            pass
+        return virtual_size
 
     def _allocate_disk(self, ssh, storage, vmid, diskname, disk_size,
                        storagename, disk_format):
@@ -347,16 +361,19 @@ class ProxmoxClient(object):
         """
         try:
             tmpfile = self._upload(ssh_session, filename)
-            image_size, tmpfile = self._decompress_image(ssh_session, tmpfile)
+            tmpfile = self._decompress_image(ssh_session, tmpfile)
+            image_size = self._get_virtual_disk_size(ssh_session, tmpfile)
 
             if not disk_size:
-                disk_size = int(math.ceil(os.stat(filename).st_size / 1024))
+                logger.warning("Setting disk size to {0}K".format(image_size))
+                disk_size = image_size
+            elif image_size > disk_size:
+                logger.warning("Provided disk size was too small, "
+                               "increasing to {0}K".format(image_size))
+                disk_size = image_size
 
-            if image_size > disk_size:
-                logger.warning("Provided disk size was too small, increasing...")
-
-            self._allocate_disk(ssh_session, storage, vmid, diskname, disk_size,
-                                storagename, disk_format)
+            self._allocate_disk(ssh_session, storage, vmid, diskname,
+                                disk_size, storagename, disk_format)
 
             devicepath = self._get_device_path(ssh_session, storagename)
 
@@ -365,7 +382,7 @@ class ProxmoxClient(object):
         finally:
             if tmpfile:
                 logger.info("Removing temporary disk file")
-                #ssh_session._exec("rm '{0}'".format(tmpfile))
+                ssh_session._exec("rm '{0}'".format(tmpfile))
 
     def _upload_to_flat_storage(self, storage, vmid, filename, disk_format,
                                 disk_label, disk_size=None):
