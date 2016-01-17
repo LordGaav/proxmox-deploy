@@ -49,7 +49,7 @@ class QuestionGroup(OrderedDict):
         """
         for question in self.values():
             if isinstance(question, QuestionGroup):
-                question.ask_all()
+                question.ask_all(_output=_output, _input=_input)
             else:
                 question.ask(_output=_output, _input=_input)
 
