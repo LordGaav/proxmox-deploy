@@ -17,7 +17,8 @@
 
 from proxmoxdeploy.questions import QuestionGroup, OptionalQuestionGroup, \
     SpecificAnswerOptionalQuestionGroup, Question, BooleanQuestion, \
-    EnumQuestion, NoAskQuestion, IntegerQuestion, MultipleAnswerQuestion
+    EnumQuestion, NoAskQuestion, IntegerQuestion, MultipleAnswerQuestion, \
+    FileQuestion
 from jinja2 import Environment, PackageLoader, Template
 from subprocess import Popen, PIPE
 import locale
@@ -70,6 +71,17 @@ QUESTIONS = QuestionGroup([
         ("apt_upgrade", BooleanQuestion("Run apt-get upgrade after rollout",
                                         default=False))
     ])),
+    ("_chef", OptionalQuestionGroup([
+        ("configure_chef", NoAskQuestion(question=None, default=True)),
+        ("chef_omnibus_url", NoAskQuestion(question=None, default="https://www.opscode.com/chef/install.sh")),
+        ("chef_server_url", Question(question="Chef Server URL")),
+        ("chef_environment", Question(question="Chef Environment", default="_default")),
+        ("chef_validator", Question(question="Chef Validation name", default="chef-validator")),
+        ("chef_validator_file", FileQuestion(question="Chef Validation certificate")),
+        ("chef_run_list", MultipleAnswerQuestion(question="Chef node run_list"))
+    ], optional_question=BooleanQuestion("Bootstrap with Chef", default=False),
+       negative_questions={"configure_chef": NoAskQuestion(question=None, default=False)}
+    )),
     ("_network", OptionalQuestionGroup([
         ("configure_network", NoAskQuestion(question=None, default=True)),
         ("vlan_id", IntegerQuestion("VLAN ID", default=1,
