@@ -96,7 +96,8 @@ QUESTIONS = QuestionGroup([
         ("packages", Question("Install extra packages (space separated))",
                               default="")),
         ("commands", Question(
-            "Run commands after cloud init (space separated)", default=""))
+            "Run commands after cloud init (space separated)", default="")),
+        ("reboot", BooleanQuestion("Reboot after cloud-init", default=False))
     ]))
 ])
 

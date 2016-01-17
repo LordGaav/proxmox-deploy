@@ -36,6 +36,8 @@ runcmd:
   {% endfor -%}
 {% endif %}
 
+{% if context.reboot %}
 power_state:
   mode: reboot
   message: Instance ready, rebooting...
+{% endif %}
