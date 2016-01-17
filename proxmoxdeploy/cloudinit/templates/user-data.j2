@@ -23,7 +23,7 @@ package_update: {{ context.apt_update }}
 package_upgrade: {{ context.apt_upgrade }}
 
 resize_rootfs: {{ context.resize_rootfs }}
-{% if context.packages -%}
+{% if context.packages %}
 packages:
   {% for package in context.packages -%}
   - {{ package }}
@@ -34,7 +34,7 @@ runcmd:
   {% for runcmd in context.runcmds -%}
   - {{ runcmd }}
   {% endfor -%}
-{% endif %}
+{% endif -%}
 
 {% if context.reboot %}
 power_state:
