@@ -344,6 +344,32 @@ class EnumQuestion(Question):
         return True
 
 
+class FileQuestion(Question):
+    """
+    Question class which interprets the answer as a file path. The file must
+    be readable to validate.
+    """
+
+    def validate(self, answer):
+        """
+        Tests of the given answer is a valid readable file.
+        """
+        try:
+            with open(answer, "r"):
+                pass
+        except IOError as ioe:
+            self.output.write("Could not open file: {0}\n".format(ioe))
+            return False
+        return True
+
+    def format_answer(self, answer):
+        """
+        Reads the file into the answer.
+        """
+        with open(answer, "r") as f:
+            return [line.rstrip() for line in f.readlines()]
+
+
 class MultipleAnswerQuestion(Question):
     """
     Question class which accepts multiple answers.

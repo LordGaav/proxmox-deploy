@@ -36,6 +36,25 @@ runcmd:
   {% endfor -%}
 {% endif -%}
 
+{% if context.configure_chef %}
+chef:
+  install_type: "omnibus"
+  omnibus_url: "{{ context.chef_omnibus_url }}"
+  force_install: false
+  server_url: "{{ context.chef_server_url }}"
+  node_name: "{{ context.name }}"
+  environment: "{{ context.chef_environment }}"
+  validation_name: "{{ context.chef_validator }}"
+  validation_key: |
+    {% for line in context.chef_validator_file -%}
+    {{ line }}
+    {% endfor %}
+  run_list:
+  {% for line in context.chef_run_list -%}
+    - "{{ line }}"
+  {% endfor -%}
+{% endif -%}
+
 {% if context.reboot %}
 power_state:
   mode: reboot
