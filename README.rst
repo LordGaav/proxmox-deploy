@@ -79,35 +79,39 @@ Tested cloud images
 
 I have tested ``proxmox-deploy`` with the following *cloud images*:
 
-+---------------+----------+--------------------------------------------------+
-| Distribution  | Version  | Status                                           |
-+===============+==========+==================================================+
-| Ubuntu        | `14.04`_ | The *-amd64-disk1.img* images work.              |
-|               | `15.10`_ |                                                  |
-+---------------+----------+--------------------------------------------------+
-| Fedora Server | `23`_    | The *qcow2* image works.                         |
-+---------------+----------+--------------------------------------------------+
-| openSUSE      | `13.2`_  | The *-OpenStack-Guest.x86_64.qcow2* image works, |
-|               |          | provided the VM has at least 512 MB RAM. The     |
-|               |          | minimal disk size is 10 GB. However, the first   |
-|               |          | NIC is called ``eth1``, so make sure to select   |
-|               |          | ``eth1`` to configure. There is no *suse*  user, |
-|               |          | login as *root*.                                 |
-+---------------+----------+--------------------------------------------------+
-| CentOS        | `6`_     | The CentOS 6 image fails to boot, hanging at     |
-|               |          | "Booting from hard disk".                        |
-|               |          |                                                  |
-|               | `7`_     | The CentOS 7 *-GenericCloud.qcow2.xz* image      |
-|               |          | works. The minimal disk size will be 8G.         |
-+---------------+----------+--------------------------------------------------+
-| Debian        | `8`_     | Neither the qcow2 nor the raw image works. The   |
-|               |          | first boot results in a kernel panic and         |
-|               |          | subsequent boots won't run ``cloud-init``,       |
-|               |          | rendering the VM unreachable.                    |
-+---------------+----------+--------------------------------------------------+
-| FreeBSD       | `10.1`_  | Does not work, `cloudbase-init-bsd`_ has no      |
-|               |          | support for the NoCloud datasource.              |
-+---------------+----------+--------------------------------------------------+
++---------------+---------------+--------------------------------------------------+
+| Distribution  | Version       | Status                                           |
++===============+===============+==================================================+
+| Ubuntu        | `14.04`_      | The *-amd64-disk1.img* images work.              |
+|               | `15.10`_      |                                                  |
++---------------+---------------+--------------------------------------------------+
+| Fedora Server | `23`_         | The *qcow2* image works.                         |
++---------------+---------------+--------------------------------------------------+
+| openSUSE      | `13.2`_       | The *-OpenStack-Guest.x86_64.qcow2* image works, |
+|               |               | provided the VM has at least 512 MB RAM. The     |
+|               |               | minimal disk size is 10 GB. However, the first   |
+|               |               | NIC is called ``eth1``, so make sure to select   |
+|               |               | ``eth1`` to configure. There is no *suse*  user, |
+|               |               | login as *root*.                                 |
++---------------+---------------+--------------------------------------------------+
+| CentOS        | `6`_          | The CentOS 6 image fails to boot, hanging at     |
+|               |               | "Booting from hard disk".                        |
+|               |               |                                                  |
+|               | `7`_          | The CentOS 7 *-GenericCloud.qcow2.xz* image      |
+|               |               | works. The minimal disk size will be 8G.         |
++---------------+---------------+--------------------------------------------------+
+| Debian        | `8`_          | Neither the qcow2 nor the raw image works. The   |
+|               |               | first boot results in a kernel panic and         |
+|               |               | subsequent boots won't run ``cloud-init``,       |
+|               |               | rendering the VM unreachable.                    |
++---------------+---------------+--------------------------------------------------+
+| FreeBSD       | `10.1 cloud`_ | Does not work, `cloudbase-init-bsd`_ has no      |
+|               |               | support for the NoCloud datasource.              |
+|               |               |                                                  |
+|               | `10.1 vm`_    | The official VM images boot at least, but        |
+|               |               | cloud-init is not available. It will boot with   |
+|               |               | with DHCP and a default user/password.           |
++---------------+---------------+--------------------------------------------------+
 
 All distributions provide a default user with the name of the distro (*ubuntu*,
 *fedora*, *centos*, *debian*, *freebsd*), except openSUSE which only has a
@@ -143,7 +147,8 @@ License
 .. _6: http://cloud.centos.org/centos/6/images/
 .. _7: http://cloud.centos.org/centos/7/images/
 .. _8: http://cdimage.debian.org/cdimage/openstack/8.2.0/
-.. _10.1: https://blog.nekoconeko.nl/blog/2015/06/04/creating-an-openstack-freebsd-image.html
+.. _10.1 cloud: https://blog.nekoconeko.nl/blog/2015/06/04/creating-an-openstack-freebsd-image.html
+.. _10.1 vm: https://www.freebsd.org/where.html
 .. _cloudbase-init-bsd: https://pellaeon.github.io/bsd-cloudinit/
 .. _proxmoxer: https://pypi.python.org/pypi/proxmoxer
 .. _openssh-wrapper: https://pypi.python.org/pypi/openssh-wrapper
