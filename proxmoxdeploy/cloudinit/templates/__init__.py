@@ -97,7 +97,9 @@ QUESTIONS = QuestionGroup([
                               default="")),
         ("commands", Question(
             "Run commands after cloud init (space separated)", default="")),
-        ("reboot", BooleanQuestion("Reboot after cloud-init", default=False))
+        ("reboot", BooleanQuestion("Reboot after cloud-init", default=False)),
+        ("start_vm", BooleanQuestion("Start VM after provisioning",
+                                     default=False))
     ]))
 ])
 

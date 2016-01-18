@@ -560,3 +560,17 @@ class ProxmoxClient(object):
                 raise se
             logger.error("Failed to set disk size, disk will probably be "
                          "bigger than expected")
+
+    def start_vm(self, node, vmid):
+        """
+        Starts a VM.
+
+        Parameters
+        ----------
+        node: str
+            Node the VM resides on.
+        vmid: int
+            ID of VM to start.
+        """
+        _node = self.client.nodes(node)
+        _node.qemu(vmid).status.start.create()

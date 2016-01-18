@@ -136,6 +136,10 @@ def main():
             logger.debug("Removing seed ISO file")
             os.remove(cloudinit_iso)
 
+    if cloudinit['start_vm']:
+        logger.info("Starting VM")
+        api.start_vm(node=proxmox['node'], vmid=proxmox['vmid'])
+
     logger.info("Virtual Machine provisioning completed")
 
 if __name__ == "__main__":
