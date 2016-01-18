@@ -17,7 +17,8 @@
 
 from proxmoxdeploy.questions import QuestionGroup, OptionalQuestionGroup, \
     SpecificAnswerOptionalQuestionGroup, Question, BooleanQuestion, \
-    EnumQuestion, NoAskQuestion, IntegerQuestion, MultipleAnswerQuestion
+    EnumQuestion, NoAskQuestion, IntegerQuestion, MultipleAnswerQuestion, \
+    FileQuestion
 from jinja2 import Environment, PackageLoader, Template
 from subprocess import Popen, PIPE
 import locale
@@ -39,13 +40,14 @@ VALID_TIMEZONES = sorted(pytz.common_timezones)
 VALID_IMAGE_FORMATS = [".iso", ".img", ".qcow2", ".raw"]
 VALID_COMPRESSION_FORMATS = [".xz", ".gz", ".bz2"]
 
+DEFAULT_SSH_KEYS = None
 try:
     agent = Popen(["ssh-add", "-L"], stdout=PIPE)
     if agent.wait() == 0:
         DEFAULT_SSH_KEYS = agent.stdout.read().rstrip().split("\n")
     del agent
 except:
-    DEFAULT_SSH_KEYS = None
+    pass
 
 QUESTIONS = QuestionGroup([
     ("_basic", QuestionGroup([
@@ -69,6 +71,24 @@ QUESTIONS = QuestionGroup([
         ("apt_upgrade", BooleanQuestion("Run apt-get upgrade after rollout",
                                         default=False))
     ])),
+    ("_chef", OptionalQuestionGroup([
+        ("configure_chef", NoAskQuestion(question=None, default=True)),
+        ("chef_omnibus_url", NoAskQuestion(
+            question=None,
+            default="https://www.opscode.com/chef/install.sh")),
+        ("chef_server_url", Question(question="Chef Server URL")),
+        ("chef_environment", Question(question="Chef Environment",
+                                      default="_default")),
+        ("chef_validator", Question(question="Chef Validation name",
+                                    default="chef-validator")),
+        ("chef_validator_file", FileQuestion(
+            question="Chef Validation certificate")),
+        ("chef_run_list", MultipleAnswerQuestion(
+            question="Chef node run_list"))
+    ], optional_question=BooleanQuestion("Bootstrap with Chef", default=False),
+        negative_questions={"configure_chef": NoAskQuestion(question=None,
+                                                            default=False)}
+    )),
     ("_network", OptionalQuestionGroup([
         ("configure_network", NoAskQuestion(question=None, default=True)),
         ("vlan_id", IntegerQuestion("VLAN ID", default=1,
@@ -95,7 +115,10 @@ QUESTIONS = QuestionGroup([
         ("packages", Question("Install extra packages (space separated))",
                               default="")),
         ("commands", Question(
-            "Run commands after cloud init (space separated)", default=""))
+            "Run commands after cloud init (space separated)", default="")),
+        ("reboot", BooleanQuestion("Reboot after cloud-init", default=False)),
+        ("start_vm", BooleanQuestion("Start VM after provisioning",
+                                     default=False))
     ]))
 ])
 

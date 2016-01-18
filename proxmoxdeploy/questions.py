@@ -49,7 +49,7 @@ class QuestionGroup(OrderedDict):
         """
         for question in self.values():
             if isinstance(question, QuestionGroup):
-                question.ask_all()
+                question.ask_all(_output=_output, _input=_input)
             else:
                 question.ask(_output=_output, _input=_input)
 
@@ -336,12 +336,39 @@ class EnumQuestion(Question):
         provided list.
         """
         if answer == "?" or answer not in self.valid_answers:
+            sorted_answers = sorted(self.valid_answers)
             self.output.write(
-                "Please enter one of: {0}\n"
-                .format(", ".join(self.valid_answers))
+                "Please enter one of: \n\t{0}\n"
+                .format("\n\t".join(sorted_answers))
             )
             return False
         return True
+
+
+class FileQuestion(Question):
+    """
+    Question class which interprets the answer as a file path. The file must
+    be readable to validate.
+    """
+
+    def validate(self, answer):
+        """
+        Tests of the given answer is a valid readable file.
+        """
+        try:
+            with open(answer, "r"):
+                pass
+        except IOError as ioe:
+            self.output.write("Could not open file: {0}\n".format(ioe))
+            return False
+        return True
+
+    def format_answer(self, answer):
+        """
+        Reads the file into the answer.
+        """
+        with open(answer, "r") as f:
+            return [line.rstrip() for line in f.readlines()]
 
 
 class MultipleAnswerQuestion(Question):

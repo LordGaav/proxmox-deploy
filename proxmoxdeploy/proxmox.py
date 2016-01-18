@@ -47,13 +47,20 @@ def ask_proxmox_questions(proxmox):
     -------
     dict of key-value pairs of answered questions.
     """
-    node_q = EnumQuestion("Proxmox Node to create VM on",
-                          valid_answers=proxmox.get_nodes())
-    node_q.ask()
-    chosen_node = node_q.answer
+    available_nodes = proxmox.get_nodes()
+    if len(available_nodes) == 1:
+        chosen_node = available_nodes[0]
+    else:
+        node_q = EnumQuestion("Proxmox Node to create VM on",
+                              valid_answers=available_nodes,
+                              default=available_nodes[0])
+        node_q.ask()
+        chosen_node = node_q.answer
 
+    available_storage = proxmox.get_storage(chosen_node)
     storage_q = EnumQuestion("Storage to create disk on",
-                             valid_answers=proxmox.get_storage(chosen_node))
+                             valid_answers=available_storage,
+                             default=available_storage[0])
     storage_q.ask()
     chosen_storage = storage_q.answer
 
@@ -560,3 +567,17 @@ class ProxmoxClient(object):
                 raise se
             logger.error("Failed to set disk size, disk will probably be "
                          "bigger than expected")
+
+    def start_vm(self, node, vmid):
+        """
+        Starts a VM.
+
+        Parameters
+        ----------
+        node: str
+            Node the VM resides on.
+        vmid: int
+            ID of VM to start.
+        """
+        _node = self.client.nodes(node)
+        _node.qemu(vmid).status.start.create()
