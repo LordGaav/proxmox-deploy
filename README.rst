@@ -135,6 +135,19 @@ interface with the Proxmox API and datastores respectively. ``proxmox-deploy``
 will not ask for passwords to login, so a proper SSH agent and SSH key access
 must be configured before hand.
 
+Changelog
+---------
+
++---------+--------------------------------------------------------------------+
+|   0.2   | * Support for cloud-init Chef handoff (no autorun yet).            |
+|         | * Improve EnumQuestion output by listing and sorting options.      |
+|         | * Add option for automatically starting VMs after deployment.      |
+|         | * Choose defaults for node and storage selection.                  |
+|         | * Support FreeBSD `mkisofs` command.                               |
++---------+--------------------------------------------------------------------+
+|   0.1   | * Initial release                                                  |
++---------+--------------------------------------------------------------------+
+
 License
 -------
 ``proxmox-deploy`` is licensed under the GPLv3 license.
