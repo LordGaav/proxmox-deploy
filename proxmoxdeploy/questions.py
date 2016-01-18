@@ -336,9 +336,10 @@ class EnumQuestion(Question):
         provided list.
         """
         if answer == "?" or answer not in self.valid_answers:
+            sorted_answers = sorted(self.valid_answers)
             self.output.write(
-                "Please enter one of: {0}\n"
-                .format(", ".join(self.valid_answers))
+                "Please enter one of: \n\t{0}\n"
+                .format("\n\t".join(sorted_answers))
             )
             return False
         return True
