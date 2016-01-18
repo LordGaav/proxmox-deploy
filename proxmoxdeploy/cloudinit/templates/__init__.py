@@ -73,14 +73,21 @@ QUESTIONS = QuestionGroup([
     ])),
     ("_chef", OptionalQuestionGroup([
         ("configure_chef", NoAskQuestion(question=None, default=True)),
-        ("chef_omnibus_url", NoAskQuestion(question=None, default="https://www.opscode.com/chef/install.sh")),
+        ("chef_omnibus_url", NoAskQuestion(
+            question=None,
+            default="https://www.opscode.com/chef/install.sh")),
         ("chef_server_url", Question(question="Chef Server URL")),
-        ("chef_environment", Question(question="Chef Environment", default="_default")),
-        ("chef_validator", Question(question="Chef Validation name", default="chef-validator")),
-        ("chef_validator_file", FileQuestion(question="Chef Validation certificate")),
-        ("chef_run_list", MultipleAnswerQuestion(question="Chef node run_list"))
+        ("chef_environment", Question(question="Chef Environment",
+                                      default="_default")),
+        ("chef_validator", Question(question="Chef Validation name",
+                                    default="chef-validator")),
+        ("chef_validator_file", FileQuestion(
+            question="Chef Validation certificate")),
+        ("chef_run_list", MultipleAnswerQuestion(
+            question="Chef node run_list"))
     ], optional_question=BooleanQuestion("Bootstrap with Chef", default=False),
-       negative_questions={"configure_chef": NoAskQuestion(question=None, default=False)}
+        negative_questions={"configure_chef": NoAskQuestion(question=None,
+                                                            default=False)}
     )),
     ("_network", OptionalQuestionGroup([
         ("configure_network", NoAskQuestion(question=None, default=True)),
