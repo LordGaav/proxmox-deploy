@@ -181,7 +181,7 @@ class ProxmoxClient(object):
         storages = []
         for storage in self.client.nodes(node).storage.get():
             if ("images" in storage['content'].split(",")
-                    and storage['type'] in ("dir", "lvm")):
+                    and storage['type'] in ("dir", "lvm", "lvmthin")):
                 storages.append(storage['storage'])
         return storages
 
@@ -505,14 +505,14 @@ class ProxmoxClient(object):
                 storage=storage, vmid=vmid, filename=filename,
                 disk_label=disk_label, disk_format=disk_format,
                 disk_size=disk_size)
-        elif _type == "lvm":
+        elif _type == "lvm" or _type == "lvmthin":
             diskname = self._upload_to_lvm_storage(
                 storage=storage, vmid=vmid, filename=filename,
                 disk_label=disk_label, disk_format=disk_format,
                 disk_size=disk_size)
         else:
             raise ValueError(
-                "Only dir and lvm storage are supported at this time")
+                "Only dir, lvm, and lvmthin storage are supported at this time")
         return diskname
 
     def attach_seed_iso(self, node, storage, vmid, iso_file):
