@@ -181,7 +181,7 @@ class ProxmoxClient(object):
         storages = []
         for storage in self.client.nodes(node).storage.get():
             if ("images" in storage['content'].split(",")
-                    and storage['type'] in ("dir", "lvm", "lvmthin")):
+                    and storage['type'] in ("dir", "lvm", "lvmthin", "nfs")):
                 storages.append(storage['storage'])
         return storages
 
@@ -500,7 +500,7 @@ class ProxmoxClient(object):
         _node = self.client.nodes(node)
         _storage = _node.storage(storage)
         _type = _storage.status.get()['type']
-        if _type == "dir":
+        if _type in ("dir", "nfs"):
             diskname = self._upload_to_flat_storage(
                 storage=storage, vmid=vmid, filename=filename,
                 disk_label=disk_label, disk_format=disk_format,
