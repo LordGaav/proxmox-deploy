@@ -581,3 +581,17 @@ class ProxmoxClient(object):
         """
         _node = self.client.nodes(node)
         _node.qemu(vmid).status.start.create()
+
+    def attach_serial_console(self, node, vmid):
+        """
+        Adds a serial console
+
+        Parameters
+        ----------
+        node: str
+            Node the VM resides on.
+        vmid: int
+            ID of VM to start.
+        """
+        _node = self.client.nodes(node)
+        _node.qemu(vmid).config.set(serial0="socket")
