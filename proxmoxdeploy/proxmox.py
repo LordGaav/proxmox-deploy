@@ -181,7 +181,7 @@ class ProxmoxClient(object):
         storages = []
         for storage in self.client.nodes(node).storage.get():
             if ("images" in storage['content'].split(",")
-                    and storage['type'] in ("dir", "lvm")):
+                    and storage['type'] in ("dir", "lvm", "lvmthin", "nfs")):
                 storages.append(storage['storage'])
         return storages
 
@@ -500,19 +500,19 @@ class ProxmoxClient(object):
         _node = self.client.nodes(node)
         _storage = _node.storage(storage)
         _type = _storage.status.get()['type']
-        if _type == "dir":
+        if _type in ("dir", "nfs"):
             diskname = self._upload_to_flat_storage(
                 storage=storage, vmid=vmid, filename=filename,
                 disk_label=disk_label, disk_format=disk_format,
                 disk_size=disk_size)
-        elif _type == "lvm":
+        elif _type == "lvm" or _type == "lvmthin":
             diskname = self._upload_to_lvm_storage(
                 storage=storage, vmid=vmid, filename=filename,
                 disk_label=disk_label, disk_format=disk_format,
                 disk_size=disk_size)
         else:
             raise ValueError(
-                "Only dir and lvm storage are supported at this time")
+                "Only dir, lvm, and lvmthin storage are supported at this time")
         return diskname
 
     def attach_seed_iso(self, node, storage, vmid, iso_file):
@@ -581,3 +581,17 @@ class ProxmoxClient(object):
         """
         _node = self.client.nodes(node)
         _node.qemu(vmid).status.start.create()
+
+    def attach_serial_console(self, node, vmid):
+        """
+        Adds a serial console
+
+        Parameters
+        ----------
+        node: str
+            Node the VM resides on.
+        vmid: int
+            ID of VM to start.
+        """
+        _node = self.client.nodes(node)
+        _node.qemu(vmid).config.set(serial0="socket")

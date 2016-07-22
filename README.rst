@@ -84,6 +84,7 @@ I have tested ``proxmox-deploy`` with the following *cloud images*:
 +===============+===============+==================================================+
 | Ubuntu        | `14.04`_      | The *-amd64-disk1.img* images work.              |
 |               | `15.10`_      |                                                  |
+|               | `16.04`_      |                                                  |
 +---------------+---------------+--------------------------------------------------+
 | Fedora Server | `23`_         | The *qcow2* image works.                         |
 +---------------+---------------+--------------------------------------------------+
@@ -139,6 +140,10 @@ Changelog
 ---------
 
 +---------+--------------------------------------------------------------------+
+|   0.3   | * Support for volumes on nfs and lvm-thin data stores.             |
+|         | * Always enable serial console on new VMs. This fixes deploying    |
+|         |   Ubuntu 16.04 cloud images.                                       |
++---------+--------------------------------------------------------------------+
 |   0.2   | * Support for cloud-init Chef handoff (no autorun yet).            |
 |         | * Improve EnumQuestion output by listing and sorting options.      |
 |         | * Add option for automatically starting VMs after deployment.      |
@@ -155,6 +160,7 @@ License
 .. _NoCloud: http://cloudinit.readthedocs.org/en/latest/topics/datasources.html#no-cloud
 .. _14.04: https://cloud-images.ubuntu.com/trusty/current/
 .. _15.10: https://cloud-images.ubuntu.com/wily/current/
+.. _16.04: https://cloud-images.ubuntu.com/xenial/current/
 .. _23: https://getfedora.org/cloud/download/
 .. _13.2: http://download.opensuse.org/repositories/Cloud:/Images:/openSUSE_13.2/images/
 .. _6: http://cloud.centos.org/centos/6/images/

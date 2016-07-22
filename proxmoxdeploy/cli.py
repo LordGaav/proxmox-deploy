@@ -122,6 +122,8 @@ def main():
                              vmid=proxmox['vmid'],
                              img_file=cloudinit['image'],
                              disk_size=disk_size)
+        logger.info("Adding serial console to VM")
+        api.attach_serial_console(node=proxmox['node'], vmid=proxmox['vmid'])
     except CommandInvocationException as cie:
         logger.error("Provisioning failed")
         if hasattr(cie, "stdout") or hasattr(cie, "stderr"):

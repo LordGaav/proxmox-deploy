@@ -16,7 +16,7 @@
 # this program. If not, see http://www.gnu.org/licenses/.
 
 NAME = "proxmox-deploy"
-VERSION = "0.2"
-BUILD = "89afb9b"
+VERSION = "0.3"
+BUILD = "7b45fa9"
 _DESCRIPTION = "{0} is cli-based deployment tool for Proxmox"
 DESCRIPTION = _DESCRIPTION.format(NAME)
