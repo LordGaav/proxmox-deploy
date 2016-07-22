@@ -140,6 +140,10 @@ Changelog
 ---------
 
 +---------+--------------------------------------------------------------------+
+|   0.3   | * Support for volumes on nfs and lvm-thin data stores.             |
+|         | * Always enable serial console on new VMs. This fixes deploying    |
+|         |   Ubuntu 16.04 cloud images.                                       |
++---------+--------------------------------------------------------------------+
 |   0.2   | * Support for cloud-init Chef handoff (no autorun yet).            |
 |         | * Improve EnumQuestion output by listing and sorting options.      |
 |         | * Add option for automatically starting VMs after deployment.      |
