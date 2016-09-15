@@ -92,7 +92,8 @@ QUESTIONS = QuestionGroup([
     ("_network", OptionalQuestionGroup([
         ("configure_network", NoAskQuestion(question=None, default=True)),
         ("vlan_id", IntegerQuestion("VLAN ID", default=1,
-                                    min_value=1, max_value=4096)),
+                                    min_value=1, max_value=4096,
+                                    allow_empty=True)),
         ("network_device", Question(question="Network device to configure",
                                     default="eth0")),
         ("_static_network", SpecificAnswerOptionalQuestionGroup([
