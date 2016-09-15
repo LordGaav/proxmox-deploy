@@ -54,6 +54,9 @@ def get_arguments():
     parser.add_argument("--proxmox-host", metavar="HOST", type=str,
                         default=config.get("proxmox-host", None),
                         help="Proxmox API host.")
+    parser.add_argument("--proxmox-port", metavar="PORT", type=int,
+                        default=config.get("proxmox-port", 22),
+                        help="Proxmox API port.")
     parser.add_argument("--proxmox-user", metavar="USER", type=str,
                         default=config.get("proxmox-user", "root"),
                         help="Proxmox API user.")
@@ -85,8 +88,9 @@ def main():
         NAME, VERSION, BUILD))
 
     args = get_arguments()
-    api = ProxmoxClient(ProxmoxAPI(args.proxmox_host, port="22", timeout=600,
-                                   user=args.proxmox_user, backend="openssh"))
+    api = ProxmoxClient(ProxmoxAPI(args.proxmox_host, port=args.proxmox_port,
+                                   timeout=600, user=args.proxmox_user,
+                                   backend="openssh"))
 
     logger.info("Asking user for configuration input")
     try:
