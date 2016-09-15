@@ -114,8 +114,10 @@ class Question(object):
     """
     question_without_default = "{0}: "
     question_with_default = "{0} [{1}]: "
+    question_with_empty_answer = "{0} (Specify a value, or 'empty')"
+    empty_answers = ['None', 'null', 'empty']
 
-    def __init__(self, question, default=None,
+    def __init__(self, question, default=None, allow_empty=False, empty_value=None,
                  _output=sys.stderr, _input=sys.stdin):
         """
         Asks an interactive question and stores the answer. See ask() for the
@@ -128,6 +130,11 @@ class Question(object):
         default: any
             Default value. Will be formatted as string and outputted as part of
             the question.
+        allow_empty: bool
+            If set to True, map answers matching `empty_answers` to the value provided
+            by empty_value.
+        empty_value: any
+            Set answer to this value if allow_empty is true and the answer is in `empty_answers`.
         _output: file
             File to output questions to. sys.stderr by default.
         _input: file
@@ -135,15 +142,24 @@ class Question(object):
         """
         self.question = question
         self.answer = default
+        self.allow_empty = allow_empty
+        self.empty_value = empty_value
         self.input = _input
         self.output = _output
 
     def _format_question(self):
-        if self.answer is not None:
+        if self.answer is not None and not self.allow_empty:
             return self.question_with_default.format(
                 self.question,
                 self.format_default()
             )
+        elif self.answer is not None and self.allow_empty:
+            return self.question_with_default.format(
+                self.question_with_empty_answer.format(self.question),
+                self.format_default()
+            )
+        elif self.allow_empty:
+            return self.question_with_empty_answer.format(self.question)
         else:
             return self.question_without_default.format(self.question)
 
@@ -201,18 +217,27 @@ class Question(object):
         Formats the answer before storing it. In the base class, the answer
         is returned unmodified.
         """
+        if answer in self.empty_answers:
+            return self.empty_value
+        if hasattr(self, "_format_answer"):
+            return self._format_answer(answer)
         return answer
 
     def validate(self, answer):
         """
         Validates the given answer. In the base class, the answer is valid when
-        it is not empty.
+        it is not empty. It may also be one of the empty answers if allow_empty
+        is True.
 
         This method is responsible for outputting helpful messages if the
         answer is invalid.
 
         Should return False when invalid.
         """
+        if answer in self.empty_answers and self.allow_empty:
+            return True
+        if hasattr(self, "_validate"):
+            return self._validate(answer)
         return answer != ""
 
 
@@ -223,7 +248,7 @@ class BooleanQuestion(Question):
     positive_answers = ["true", "t", "yes", "y"]
     negative_answers = ["false", "f", "no", "n"]
 
-    def validate(self, answer):
+    def _validate(self, answer):
         """
         Validates if the given answer is contained in positive_answers or
         negative_answers (case-insensitive).
@@ -247,7 +272,7 @@ class BooleanQuestion(Question):
         else:
             return "No"
 
-    def format_answer(self, answer):
+    def _format_answer(self, answer):
         """
         Converts the given answer into a boolean for storage.
         """
@@ -261,12 +286,13 @@ class IntegerQuestion(Question):
     """
     Question class which only accepts integer answers.
     """
+
     def __init__(self, question, min_value=None, max_value=None, **kwargs):
         super(IntegerQuestion, self).__init__(question, **kwargs)
         self.min_value = min_value
         self.max_value = max_value
 
-    def validate(self, answer):
+    def _validate(self, answer):
         """
         Validates the given answer by casting it to an integer. If a min_value
         and/or max_value was supplied to the constructor, also validates the
@@ -309,7 +335,7 @@ class IntegerQuestion(Question):
             return False
         return True
 
-    def format_answer(self, answer):
+    def _format_answer(self, answer):
         """
         Casts the answer to an integer.
         """
@@ -330,7 +356,7 @@ class EnumQuestion(Question):
             assert default in valid_answers
         self.valid_answers = valid_answers
 
-    def validate(self, answer):
+    def _validate(self, answer):
         """
         Validates the given answer by checking it's presence in the
         provided list.
@@ -351,7 +377,7 @@ class FileQuestion(Question):
     be readable to validate.
     """
 
-    def validate(self, answer):
+    def _validate(self, answer):
         """
         Tests of the given answer is a valid readable file.
         """
@@ -363,7 +389,7 @@ class FileQuestion(Question):
             return False
         return True
 
-    def format_answer(self, answer):
+    def _format_answer(self, answer):
         """
         Reads the file into the answer.
         """
@@ -428,9 +454,3 @@ class NoAskQuestion(Question):
         No questions asked.
         """
         pass
-
-    def format_answer(self, answer):
-        """
-        Return the answer without any casting or converting.
-        """
-        return answer
