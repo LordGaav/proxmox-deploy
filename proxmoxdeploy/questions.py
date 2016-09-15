@@ -114,6 +114,7 @@ class Question(object):
     """
     question_without_default = "{0}: "
     question_with_default = "{0} [{1}]: "
+    question_with_empty_answer = "{0} (Specify a value, or 'empty')"
     empty_answers = ['None', 'null', 'empty']
 
     def __init__(self, question, default=None, allow_empty=False, empty_value=None,
@@ -154,9 +155,11 @@ class Question(object):
             )
         elif self.answer is not None and self.allow_empty:
             return self.question_with_default.format(
-                self.question,
-                self.format_default() + " or 'empty'"
+                self.question_with_empty_answer.format(self.question),
+                self.format_default()
             )
+        elif self.allow_empty:
+            return self.question_with_empty_answer.format(self.question)
         else:
             return self.question_without_default.format(self.question)
 
