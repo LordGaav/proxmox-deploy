@@ -366,6 +366,7 @@ class ProxmoxClient(object):
             Override the disk size. If not specified, the size is calculated
             from the file. In kilobytes.
         """
+        tmpfile = None
         try:
             tmpfile = self._upload(ssh_session, filename)
             tmpfile = self._decompress_image(ssh_session, tmpfile)
