@@ -333,7 +333,7 @@ class ProxmoxClient(object):
 
     def _upload_to_storage(self, ssh_session, storage, vmid, filename,
                            diskname, storagename, disk_format="raw",
-                           disk_size=None):
+                           disk_size=None, disk_multiple=None):
         """
         Upload a file into a datastore. The steps executed are:
           1. The file is uploaded via SFTP to /tmp.
@@ -365,6 +365,8 @@ class ProxmoxClient(object):
         disk_size: int
             Override the disk size. If not specified, the size is calculated
             from the file. In kilobytes.
+        disk_multiple: int
+            Increase size of disk to be a multiple of this size. In kilobytes.
         """
         tmpfile = None
         try:
@@ -380,6 +382,12 @@ class ProxmoxClient(object):
                                "increasing to {0}K".format(image_size))
                 disk_size = image_size
 
+            if disk_multiple and disk_size % disk_multiple != 0:
+                disk_size += disk_multiple - (disk_size % disk_multiple)
+                logger.warning("Disk size is not a multiple of {0}, "
+                               "increasing to {0}K".format(disk_multiple,
+                                                           disk_size))
+
             self._allocate_disk(ssh_session, storage, vmid, diskname,
                                 disk_size, storagename, disk_format)
 
@@ -393,7 +401,8 @@ class ProxmoxClient(object):
                 ssh_session._exec("rm '{0}'".format(tmpfile))
 
     def _upload_to_flat_storage(self, storage, vmid, filename, disk_format,
-                                disk_label, disk_size=None):
+                                disk_label, disk_size=None,
+                                disk_multiple=None):
         """
         Generates appropriate names for uploading a file to a 'dir' datastore.
         Actual work is done by _upload_to_storage.
@@ -415,6 +424,8 @@ class ProxmoxClient(object):
         disk_size: int
             Override the disk size. If not specified, the size is calculated
             from the file. In kilobytes.
+        disk_multiple: int
+            Increase size of disk to be a multiple of this size. In kilobytes.
 
         Returns
         -------
@@ -427,12 +438,14 @@ class ProxmoxClient(object):
         logger.info("Uploading to flat storage")
         self._upload_to_storage(ssh_session, storage, vmid, filename,
                                 diskname, storagename, disk_format=disk_format,
-                                disk_size=disk_size)
+                                disk_size=disk_size,
+                                disk_multiple=disk_multiple)
 
         return storagename
 
     def _upload_to_lvm_storage(self, storage, vmid, filename, disk_format,
-                               disk_label, disk_size=None):
+                               disk_label, disk_size=None, 
+                               disk_multiple=None):
         """
         Generates appropriate names for uploading a file to a 'lvm' datastore.
         Actual work is done by _upload_to_storage.
@@ -454,6 +467,8 @@ class ProxmoxClient(object):
         disk_size: int
             Override the disk size. If not specified, the size is calculated
             from the file. In kilobytes.
+        disk_multiple: int
+            Increase size of disk to be a multiple of this size. In kilobytes.
 
         Returns
         -------
@@ -467,7 +482,8 @@ class ProxmoxClient(object):
         # LVM only supports raw disks, overwrite the disk_format here.
         self._upload_to_storage(ssh_session, storage, vmid, filename,
                                 diskname, storagename, disk_format="raw",
-                                disk_size=disk_size)
+                                disk_size=disk_size,
+                                disk_multiple=disk_multiple)
 
         return storagename
 
