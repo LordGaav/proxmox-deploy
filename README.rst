@@ -120,7 +120,7 @@ All distributions provide a default user with the name of the distro (*ubuntu*,
 
 Dependencies
 ------------
-* Proxmox VE 4.1
+* Proxmox VE 4.1 or later
 * Python 2.7
 * `proxmoxer`_ as Proxmox API client
 * `openssh-wrapper`_ for communicating with the Proxmox API and
@@ -139,6 +139,10 @@ must be configured before hand.
 Changelog
 ---------
 
++---------+--------------------------------------------------------------------+
+|  0.4.0  | * Support for volumes on zfspool stores.                           |
+|         | * Allow specifying an empty VLAN id.                               |
+|         | * Allow specifying a different SSH port for connecting to Proxmox. |
 +---------+--------------------------------------------------------------------+
 |   0.3   | * Support for volumes on nfs and lvm-thin data stores.             |
 |         | * Always enable serial console on new VMs. This fixes deploying    |
