@@ -527,9 +527,15 @@ class ProxmoxClient(object):
                 storage=storage, vmid=vmid, filename=filename,
                 disk_label=disk_label, disk_format=disk_format,
                 disk_size=disk_size)
+        elif _type == "zfspool":
+            diskname = self._upload_to_blob_storage(
+                storage=storage, vmid=vmid, filename=filename,
+                disk_label=disk_label, disk_format=disk_format,
+                disk_size=disk_size, disk_multiple=1024)
         else:
             raise ValueError(
-                "Only dir, lvm, and lvmthin storage are supported at this time")
+                "Only dir, lvm, lvmthin and zfspool storage are supported at "
+                "this time")
         return diskname
 
     def attach_seed_iso(self, node, storage, vmid, iso_file):
