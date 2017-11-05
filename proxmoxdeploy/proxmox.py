@@ -443,11 +443,11 @@ class ProxmoxClient(object):
 
         return storagename
 
-    def _upload_to_lvm_storage(self, storage, vmid, filename, disk_format,
-                               disk_label, disk_size=None, 
-                               disk_multiple=None):
+    def _upload_to_blob_storage(self, storage, vmid, filename, disk_format,
+                                disk_label, disk_size=None,
+                                disk_multiple=None):
         """
-        Generates appropriate names for uploading a file to a 'lvm' datastore.
+        Generates appropriate names for uploading a file to a blob datastore.
         Actual work is done by _upload_to_storage.
 
         Parameters
@@ -460,8 +460,8 @@ class ProxmoxClient(object):
         filename: str
             Local filename of the file.
         disk_format: raw or qcow2
-            Format of the file. Will be overridden into 'raw', because LVM only
-            supports RAW disks.
+            Format of the file. Will be overridden into 'raw', because blob
+            storage only supports RAW disks.
         disk_label: str
             Label to incorporate in the resulting disk name.
         disk_size: int
@@ -478,7 +478,7 @@ class ProxmoxClient(object):
         diskname = "vm-{0}-{1}".format(vmid, disk_label)
         storagename = "{0}:{1}".format(storage, diskname)
 
-        logger.info("Uploading to LVM storage")
+        logger.info("Uploading to blob storage")
         # LVM only supports raw disks, overwrite the disk_format here.
         self._upload_to_storage(ssh_session, storage, vmid, filename,
                                 diskname, storagename, disk_format="raw",
@@ -522,8 +522,8 @@ class ProxmoxClient(object):
                 storage=storage, vmid=vmid, filename=filename,
                 disk_label=disk_label, disk_format=disk_format,
                 disk_size=disk_size)
-        elif _type == "lvm" or _type == "lvmthin":
-            diskname = self._upload_to_lvm_storage(
+        elif _type in ("lvm", "lvmthin"):
+            diskname = self._upload_to_blob_storage(
                 storage=storage, vmid=vmid, filename=filename,
                 disk_label=disk_label, disk_format=disk_format,
                 disk_size=disk_size)
