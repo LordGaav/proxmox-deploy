@@ -73,6 +73,8 @@ def get_arguments():
         logger.error("No directory containing Cloud images specified.")
         sys.exit(1)
 
+    args.proxmox_port = str(args.proxmox_port)
+
     return args
 
 
