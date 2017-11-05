@@ -181,7 +181,7 @@ class ProxmoxClient(object):
         storages = []
         for storage in self.client.nodes(node).storage.get():
             if ("images" in storage['content'].split(",")
-                    and storage['type'] in ("dir", "lvm", "lvmthin", "nfs")):
+                    and storage['type'] in ("dir", "lvm", "lvmthin", "nfs", "zfspool")):
                 storages.append(storage['storage'])
         return storages
 
@@ -333,7 +333,7 @@ class ProxmoxClient(object):
 
     def _upload_to_storage(self, ssh_session, storage, vmid, filename,
                            diskname, storagename, disk_format="raw",
-                           disk_size=None):
+                           disk_size=None, disk_multiple=None):
         """
         Upload a file into a datastore. The steps executed are:
           1. The file is uploaded via SFTP to /tmp.
@@ -365,7 +365,10 @@ class ProxmoxClient(object):
         disk_size: int
             Override the disk size. If not specified, the size is calculated
             from the file. In kilobytes.
+        disk_multiple: int
+            Increase size of disk to be a multiple of this size. In kilobytes.
         """
+        tmpfile = None
         try:
             tmpfile = self._upload(ssh_session, filename)
             tmpfile = self._decompress_image(ssh_session, tmpfile)
@@ -378,6 +381,12 @@ class ProxmoxClient(object):
                 logger.warning("Provided disk size was too small, "
                                "increasing to {0}K".format(image_size))
                 disk_size = image_size
+
+            if disk_multiple and disk_size % disk_multiple != 0:
+                disk_size += disk_multiple - (disk_size % disk_multiple)
+                logger.warning("Disk size is not a multiple of {0}, "
+                               "increasing to {0}K".format(disk_multiple,
+                                                           disk_size))
 
             self._allocate_disk(ssh_session, storage, vmid, diskname,
                                 disk_size, storagename, disk_format)
@@ -392,7 +401,8 @@ class ProxmoxClient(object):
                 ssh_session._exec("rm '{0}'".format(tmpfile))
 
     def _upload_to_flat_storage(self, storage, vmid, filename, disk_format,
-                                disk_label, disk_size=None):
+                                disk_label, disk_size=None,
+                                disk_multiple=None):
         """
         Generates appropriate names for uploading a file to a 'dir' datastore.
         Actual work is done by _upload_to_storage.
@@ -414,6 +424,8 @@ class ProxmoxClient(object):
         disk_size: int
             Override the disk size. If not specified, the size is calculated
             from the file. In kilobytes.
+        disk_multiple: int
+            Increase size of disk to be a multiple of this size. In kilobytes.
 
         Returns
         -------
@@ -426,14 +438,16 @@ class ProxmoxClient(object):
         logger.info("Uploading to flat storage")
         self._upload_to_storage(ssh_session, storage, vmid, filename,
                                 diskname, storagename, disk_format=disk_format,
-                                disk_size=disk_size)
+                                disk_size=disk_size,
+                                disk_multiple=disk_multiple)
 
         return storagename
 
-    def _upload_to_lvm_storage(self, storage, vmid, filename, disk_format,
-                               disk_label, disk_size=None):
+    def _upload_to_blob_storage(self, storage, vmid, filename, disk_format,
+                                disk_label, disk_size=None,
+                                disk_multiple=None):
         """
-        Generates appropriate names for uploading a file to a 'lvm' datastore.
+        Generates appropriate names for uploading a file to a blob datastore.
         Actual work is done by _upload_to_storage.
 
         Parameters
@@ -446,13 +460,15 @@ class ProxmoxClient(object):
         filename: str
             Local filename of the file.
         disk_format: raw or qcow2
-            Format of the file. Will be overridden into 'raw', because LVM only
-            supports RAW disks.
+            Format of the file. Will be overridden into 'raw', because blob
+            storage only supports RAW disks.
         disk_label: str
             Label to incorporate in the resulting disk name.
         disk_size: int
             Override the disk size. If not specified, the size is calculated
             from the file. In kilobytes.
+        disk_multiple: int
+            Increase size of disk to be a multiple of this size. In kilobytes.
 
         Returns
         -------
@@ -462,11 +478,12 @@ class ProxmoxClient(object):
         diskname = "vm-{0}-{1}".format(vmid, disk_label)
         storagename = "{0}:{1}".format(storage, diskname)
 
-        logger.info("Uploading to LVM storage")
+        logger.info("Uploading to blob storage")
         # LVM only supports raw disks, overwrite the disk_format here.
         self._upload_to_storage(ssh_session, storage, vmid, filename,
                                 diskname, storagename, disk_format="raw",
-                                disk_size=disk_size)
+                                disk_size=disk_size,
+                                disk_multiple=disk_multiple)
 
         return storagename
 
@@ -505,14 +522,20 @@ class ProxmoxClient(object):
                 storage=storage, vmid=vmid, filename=filename,
                 disk_label=disk_label, disk_format=disk_format,
                 disk_size=disk_size)
-        elif _type == "lvm" or _type == "lvmthin":
-            diskname = self._upload_to_lvm_storage(
+        elif _type in ("lvm", "lvmthin"):
+            diskname = self._upload_to_blob_storage(
                 storage=storage, vmid=vmid, filename=filename,
                 disk_label=disk_label, disk_format=disk_format,
                 disk_size=disk_size)
+        elif _type == "zfspool":
+            diskname = self._upload_to_blob_storage(
+                storage=storage, vmid=vmid, filename=filename,
+                disk_label=disk_label, disk_format=disk_format,
+                disk_size=disk_size, disk_multiple=1024)
         else:
             raise ValueError(
-                "Only dir, lvm, and lvmthin storage are supported at this time")
+                "Only dir, lvm, lvmthin and zfspool storage are supported at "
+                "this time")
         return diskname
 
     def attach_seed_iso(self, node, storage, vmid, iso_file):
